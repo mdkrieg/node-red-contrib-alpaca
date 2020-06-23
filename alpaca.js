@@ -36,5 +36,5 @@ module.exports = function(RED) {
 		 });
 	 }
     RED.nodes.registerType("submit-order",submitOrder);
-    RED.nodes.registerType("get-order",getOrder);
+    //RED.nodes.registerType("get-order",getOrder);
 }
