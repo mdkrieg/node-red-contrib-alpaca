@@ -1,3 +1,4 @@
+Alpaca API: https://alpaca.markets/
 Showcase: https://www.matthewdkrieg.com/projects/node-red-node-for-the-alpaca-stock-trading-api
 
 # Alpaca Trading with Node-RED
