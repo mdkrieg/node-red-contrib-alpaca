@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-alpaca",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Adaptation of alpaca-trade-api-js for node-red",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -8,7 +8,7 @@
   "keywords": [
     "node-red",
     "alpaca",
-	"trading"
+    "trading"
   ],
   "author": "Matthew Krieg <mdkrieg@mtu.edu>",
   "license": "MIT",
