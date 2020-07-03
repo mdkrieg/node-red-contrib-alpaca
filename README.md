@@ -11,8 +11,8 @@ Alpaca is a stock trading API.
    * Usually /home/[user]/.node-red/node_modules
 1. run "npm install" from project's root to grab dependencies
 1. Define your API keys as environment variables
-   * ALPACA_API_KEY=[your API key]
-   * ALPACA_API_SECRET=[your secret key]
+   * APCA_API_KEY_ID=[your API key]
+   * APCA_API_SECRET_KEY=[your secret key]
 
 # Dependencies
 Requires Alpaca's NodeJS SDK, https://github.com/alpacahq/alpaca-trade-api-js
