@@ -15,6 +15,7 @@ module.exports = function(RED) {
         node.on('input', function(msg) {
             const symbol = msg.symbol || config.symbol;
             const qty = msg.qty || config.qty;
+            const type = msg.type || config.type || "limit";
             const price = msg.price || config.price;
             const tif = msg.tif || config.tif || "day";
             const side = msg.side || config.side;
@@ -22,7 +23,7 @@ module.exports = function(RED) {
                 symbol: symbol,
                 qty: qty,
                 side: side,
-                type: 'limit',
+                type: type,
                 time_in_force: tif,
                 limit_price: price
             }).then(function(resp) {
