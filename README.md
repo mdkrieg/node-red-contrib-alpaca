@@ -10,23 +10,35 @@ Alpaca is a stock trading API.
 
 # Installation
 
-**Steps:**
+Project can be installed by searching "alpaca" in the Manage Palette section of your Node-RED session. There are no dependencies that NPM won't take care of automatically.
+
+Or to install using npm from your Node-RED home directory (~/.node-red)
+
+```
+npm install node-red-contrib-alpaca
+```
+
+**Manual install from GitHub:**
 1. Clone this repository to your Node-RED profile folder
    * Usually /home/[user]/.node-red/node_modules
-1. run "npm install" from project's root to grab dependencies
-1. Define your API keys as environment variables
+1. Move to the repository's root and run "npm install" to grab dependencies
+
+
+**Define your API keys as environment variables:**
    * APCA_API_KEY_ID=[your API key]
    * APCA_API_SECRET_KEY=[your secret key]
 
 # Dependencies
-Requires Alpaca's NodeJS SDK, https://github.com/alpacahq/alpaca-trade-api-js
+Requires Alpaca's Official NodeJS SDK, https://github.com/alpacahq/alpaca-trade-api-js
 
-To install SDK by itself:
+Will install automatically if using npm or nodered directly, or to install SDK by itself:
 
 ```
 npm install @alpacahq/alpaca-trade-api
 ```
 
 # To Do
-- [ ] Integrate additional features from the SDK
-- [ ] Publish to NPM
+- [x] Publish to NPM
+- [x] Publish to Node-RED
+- [ ] Integrate ability to make all types of orders (market, stop limit, etc)
+- [ ] Allow API Keys to be defined in configuration node
