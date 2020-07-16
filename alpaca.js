@@ -13,23 +13,26 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,config);
         var node = this;
         node.on('input', function(msg) {
-            const symbol = msg.symbol || config.symbol;
-            const qty = msg.qty || config.qty;
-            const type = msg.type || config.type || "limit";
-            const price = msg.price || config.price;
-            const tif = msg.tif || config.tif || "day";
-            const side = msg.side || config.side;
-            alpaca.createOrder({
-                symbol: symbol,
-                qty: qty,
-                side: side,
-                type: type,
-                time_in_force: tif,
-                limit_price: price
-            }).then(function(resp) {
-                msg.payload = resp;
-                node.send(msg);
-            }).catch((err) => {console.log(err.error);});
+            var req = {};
+            	req.symbol = msg.payload.symbol || msg.symbol || config.symbol;
+            	req.qty = msg.payload.qty || msg.qty || config.qty;
+            	req.type = msg.payload.ordertype ||  msg.ordertype || config.ordertype || "limit";
+            	if (req.type === "limit" || req.type === "stop_limit"){
+            		req.limit_price = msg.payload.price ||  msg.price || config.price; }
+            	if (req.type === "stop" || req.type === "stop_limit"){
+            		req.stop_price = msg.payload.price ||  msg.price || config.price; }
+            	req.time_in_force = msg.payload.tif ||  msg.tif || config.tif || "day";
+            	req.side = msg.payload.side ||  msg.side || config.side;
+            alpaca.createOrder(req)
+            .then(function(resp) {
+                msg.payload.response = resp;
+                node.send(msg); })
+            .catch((err) => {
+            	console.log("Error - Alpaca Submit Order:");
+            	console.log(err.error);
+            	msg.payload = err.error;
+            	node.send(msg);
+            });
         });
     }
     function getOrder(config) {
@@ -59,8 +62,8 @@ module.exports = function(RED) {
 	    RED.nodes.createNode(this,config);
         var node = this;
         node.on('input', function(msg) {
-            const symbol = msg.symbol || config.symbol;
-            const limit = msg.limit || config.limit || 1;
+            var symbol = msg.symbol || config.symbol;
+            var limit = msg.limit || config.limit || 1;
             alpaca.getBars(
                 'minute',
                 symbol,

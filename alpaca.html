@@ -5,7 +5,7 @@
         defaults: {
             name: {value:""},
             symbol:{value:""},
-            type: {value:"limit"},
+            ordertype: {value:"limit"},
             qty: {value:0},
             price: {value:0.0},
             tif: {value:"day"},
@@ -43,7 +43,8 @@
         outputs:1,
         icon: "alpaca.svg",
         label: function() {
-            return this.name||"get bars";
+            return this.name||"get bars - " + this.symbol;
+        		
         }
     });
     RED.nodes.registerType('get-account',{
@@ -70,31 +71,34 @@
         <label for="node-input-symbol"><i class="fa fa-tag"></i> Symbol</label>
         <input type="text" id="node-input-symbol" placeholder="Symbol">
         <br />
-        <small style="padding-left: 100px;">Incoming <code>msg.symbol</code> overwrites this value</small>
+        <small style="padding-left: 100px;">Incoming <code>msg.payload.symbol</code> overwrites this value</small>
     </div>
     <div class="form-row">
-        <label for="node-input-type"><i class="fa fa-question"></i> Type</label>
-        <select id="node-input-type" placeholder="Order Type">            
+        <label for="node-input-ordertype"><i class="fa fa-question"></i> Order Type</label>
+        <select id="node-input-ordertype" placeholder="Order Type">            
             <option value="market">Market</option>
             <option value="limit">Limit</option>
             <option value="stop">Stop</option>
             <option value="stop_limit">Stop Limit</option>
         </select>
         <br />
-        <small style="padding-left: 100px;">Incoming <code>msg.type</code> overwrites this value</small>
+        <small style="padding-left: 100px;">Incoming <code>msg.payload.ordertype</code> overwrites this value</small>
+        <br />
+        <small style="padding-left: 100px;">"market" | "limit" | "stop" | "stop_limit"</small>
     </div>
     <div class="form-row">
         <label for="node-input-qty"><i class="fa fa-hashtag"></i> Quantity</label>
         <input type="text" id="node-input-qty" placeholder="0">
         <br />
-        <small style="padding-left: 100px;">Incoming <code>msg.qty</code> overwrites this value</small>
+        <small style="padding-left: 100px;">Incoming <code>msg.payload.qty</code> overwrites this value</small>
     </div>
-    <br />
     <div class="form-row">
         <label for="node-input-price"><i class="fa fa-usd"></i> Price</label>
         <input type="text" id="node-input-price" placeholder="0.0">
         <br />
-        <small style="padding-left: 100px;">Incoming <code>msg.price</code> overwrites this value</small>
+        <small style="padding-left: 100px;">Incoming <code>msg.payload.price</code> overwrites this value</small>
+        <br />
+        <small style="padding-left: 100px;">Value is ignored if Order Type is "market"</small>
     </div>
     <div class="form-row">
         <label for="node-input-side"><i class="fa fa-suitcase"></i> Side</label>
@@ -103,7 +107,9 @@
             <option value="sell">Sell</option>
         </select>
         <br />
-        <small style="padding-left: 100px;">Incoming <code>msg.side</code> overwrites this value</small>
+        <small style="padding-left: 100px;">Incoming <code>msg.payload.side</code> overwrites this value</small>
+        <br />
+        <small style="padding-left: 100px;">"buy" | "sell"</small>
     </div>
     <div class="form-row">
         <label for="node-input-tif"><i class="fa fa-clock-o"></i> Time In Force</label>
@@ -112,7 +118,9 @@
             <option value="gtc">Good-til-close</option>
         </select>
         <br />
-        <small style="padding-left: 100px;">Incoming <code>msg.tif</code> overwrites this value</small>
+        <small style="padding-left: 100px;">Incoming <code>msg.payload.tif</code> overwrites this value</small>
+        <br />
+        <small style="padding-left: 100px;">"day" | "gtc"</small>
     </div>
 </script>
 
@@ -175,13 +183,13 @@
         <label for="node-input-symbol"><i class="fa fa-tag"></i> Symbol</label>
         <input type="text" id="node-input-symbol" placeholder="Symbol">
         <br />
-        <small style="padding-left: 100px;">Incoming <code>msg.symbol</code> overwrites this value</small>
+        <small style="padding-left: 100px;">Incoming <code>msg.payload.symbol</code> overwrites this value</small>
     </div>
     <div class="form-row">
         <label for="node-input-limit"><i class="fa fa-history"></i> Limit</label>
         <input type="text" id="node-input-limit" placeholder="Limit">
         <br />
-        <small style="padding-left: 100px;">Incoming <code>msg.limit</code> overwrites this value</small>
+        <small style="padding-left: 100px;">Incoming <code>msg.payload.limit</code> overwrites this value</small>
     </div>
 </script>
 
