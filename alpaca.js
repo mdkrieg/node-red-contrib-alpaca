@@ -27,7 +27,7 @@ module.exports = function(RED) {
             .then(function(resp) {
                 msg.payload.response = resp;
                 node.send(msg); })
-            .catch((err) => {
+            .catch(function(err) {
             	console.log("Error - Alpaca Submit Order:");
             	console.log(err.error);
             	msg.payload = err.error;
@@ -39,40 +39,54 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,config);
         var node = this;
         node.on('input', function(msg) {
-            alpaca.getOrders({
-		      status:'all', 
-		      direction:'asc'
-		    }).then(function(resp) {
-                msg.payload = resp;
-		        node.send(msg);
-            }).catch((err) => {console.log(err.error);});
+        		var req = {};
+        			req.status = msg.payload.status || msg.status || 'all';
+        			req.direction = msg.payload.direction || msg.direction || 'asc';
+        		alpaca.getOrders(req)
+        		.then(function(resp) {
+               msg.payload = resp;
+		      	node.send(msg); })
+		      .catch(function(err) {
+		      	console.log(err.error);
+            	msg.payload = err.error;
+            	node.send(msg);
+		      });
 		 });
 	}
     function getAccount(config) {
         RED.nodes.createNode(this,config);
         var node = this;
         node.on('input', function(msg) {
-            alpaca.getAccount().then(function(resp) {
-                msg.payload = resp;
-		        node.send(msg);
-            }).catch((err) => {console.log(err.error);});
+            alpaca.getAccount()
+            .then(function(resp) {
+               msg.payload = resp;
+		      	node.send(msg); })
+            .catch(function(err) {
+            	console.log(err.error);
+            	msg.payload = err.error;
+            	node.send(msg);
+            });
 		 });
 	}
 	function getBars(config) {
 	    RED.nodes.createNode(this,config);
         var node = this;
         node.on('input', function(msg) {
-            var symbol = msg.symbol || config.symbol;
-            var limit = msg.limit || config.limit || 1;
+        		var timescale = msg.payload.timescale || msg.timescale || config.timescale || 'minute';
+            var symbol = msg.payload.symbol || msg.symbol || config.symbol;
+            var limit = msg.payload.limit || msg.limit || config.limit || 1;
             alpaca.getBars(
-                'minute',
-                symbol,
-                {limit: limit}
-                ).then(function(resp) {
-                    msg.payload = resp;
-		            node.send(msg);
-                }
-            ).catch((err) => {console.log(err.error);});
+               timescale,
+               symbol,
+            	{limit: limit})
+            .then(function(resp) {
+               msg.payload = resp;
+		         node.send(msg); })
+		      .catch(function(err) {
+		      	console.log(err.error);
+            	msg.payload = err.error;
+            	node.send(msg);
+		      });
         });
 	}
 	
