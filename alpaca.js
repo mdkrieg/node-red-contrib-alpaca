@@ -3,12 +3,15 @@ const API_SECRET = process.env.APCA_API_SECRET_KEY || '';
 const PAPER = true;
 
 module.exports = function(RED) {
+
     var Alpaca = require('@alpacahq/alpaca-trade-api');
     var alpaca = new Alpaca({
       keyId: API_KEY, 
       secretKey: API_SECRET, 
       paper: PAPER
     });
+    
+    
     function submitOrder(config) {
         RED.nodes.createNode(this,config);
         var node = this;
@@ -89,7 +92,6 @@ module.exports = function(RED) {
 		      });
         });
 	}
-	
     RED.nodes.registerType("submit-order",submitOrder);
     RED.nodes.registerType("get-order",getOrder);
     RED.nodes.registerType("get-bars",getBars);

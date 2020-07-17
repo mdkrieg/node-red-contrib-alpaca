@@ -1,4 +1,5 @@
 <script type="text/javascript">/* global RED */
+
     RED.nodes.registerType('submit-order',{
         category: 'alpaca',
         color: '#EEEEEE',
@@ -9,7 +10,8 @@
             qty: {value:0},
             price: {value:0.0},
             tif: {value:"day"},
-            side: {value:""}
+            side: {value:""},
+			auth: {value:"", type:"alpaca-config"}
         },
         inputs:1,
         outputs:1,
@@ -62,11 +64,15 @@
     });
 </script>
 
+
 <script type="text/html" data-template-name="submit-order">
-	<    
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-alpaca-config"><i class="fa fa-key"></i> Auth</label>
+        <input type="text" id="node-input-alpaca-config" placeholder="">
     </div>
     <div class="form-row">
         <label for="node-input-symbol"><i class="fa fa-tag"></i> Symbol</label>
