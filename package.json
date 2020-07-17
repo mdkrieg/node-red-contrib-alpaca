@@ -16,7 +16,8 @@
   "license": "MIT",
   "node-red": {
     "nodes": {
-      "alpaca": "alpaca.js"
+      "alpaca": "alpaca.js",
+      "alpaca-config": "config.js"
     }
   },
   "dependencies": {
