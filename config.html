@@ -1,0 +1,30 @@
+<script type="text/html" data-template-name="alpaca-config">
+    <div class="form-row">
+        <label for="node-config-input-key-id"><i class="icon-bookmark"></i> Key</label>
+        <input type="text" id="node-config-input-key-id">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-secret-key"><i class="icon-bookmark"></i> Secret Key</label>
+        <input type="text" id="node-config-input-secret-key">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-paper"><i class="icon-bookmark"></i> Paper Trades</label>
+        <input type="checkbox" id="node-config-input-paper">
+    </div>
+</script>
+
+<script type="text/javascript">/* global RED */
+
+    RED.nodes.registerType('alpaca-config',{
+        category: 'config',
+        defaults: {
+            key-id: {value:"",required:true},
+            secret-key: {value:"",required:true},
+            paper: {value:true, required:true}
+        },
+        label: function() {
+            return 'alpaca-config';
+        }
+    });
+</script>
+
