@@ -1,30 +1,42 @@
-<script type="text/html" data-template-name="alpaca-config">
-    <div class="form-row">
-        <label for="node-config-input-key-id"><i class="icon-bookmark"></i> Key</label>
-        <input type="text" id="node-config-input-key-id">
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-secret-key"><i class="icon-bookmark"></i> Secret Key</label>
-        <input type="text" id="node-config-input-secret-key">
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-paper"><i class="icon-bookmark"></i> Paper Trades</label>
-        <input type="checkbox" id="node-config-input-paper">
-    </div>
-</script>
-
 <script type="text/javascript">/* global RED */
-
     RED.nodes.registerType('alpaca-config',{
         category: 'config',
         defaults: {
-            key-id: {value:"",required:true},
-            secret-key: {value:"",required:true},
-            paper: {value:true, required:true}
+            name: {value:"My Alpaca Config",required:true},
+            keyid: {value:"${APCA_API_KEY_ID}",required:true},
+            secretkey: {value:"${APCA_API_SECRET_KEY}",required:true},
+            paper: {value:"true", required:true}
         },
         label: function() {
-            return 'alpaca-config';
+            if(this.paper === true || this.paper === "true"){
+                return "[PAPER] " + this.name;
+            }else if(this.paper === false || this.paper === "false"){
+                return "[CASH!] " + this.name;
+            }else{
+                return "My Alpaca Config";
+            }
         }
     });
 </script>
 
+<script type="text/x-red" data-template-name="alpaca-config">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="icon-bookmark"></i> Config Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-keyid"><i class="fa fa-key"></i> Key</label>
+        <input type="text" id="node-config-input-keyid">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-secretkey"><i class="fa fa-key"></i> Secret Key</label>
+        <input type="text" id="node-config-input-secretkey">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-paper"><i class="fa fa-exclamation-triangle"></i> Paper/Cash</label>
+        <select id="node-config-input-paper" placeholder="Paper Trading">            
+            <option value="true">Paper Trades</option>
+            <option value="false">Cash Trades</option>
+        </select>
+    </div>
+</script>
