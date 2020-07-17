@@ -11,6 +11,7 @@ Alpaca is a stock trading API.
 # Release Notes
 
 ### 0.2.0
+* Added market, limit, stop, or stop limit options for submit-order
 * Added configuration node
     * Same ENV vars from previous minor version still work
     * Ability to select "cash trades"
