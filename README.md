@@ -10,6 +10,12 @@ Alpaca is a stock trading API.
 
 # Release Notes
 
+### 0.3.0
+* Added on-event node for triggering on the following events:
+    *  onStateChange
+    *  onOrderUpdate
+    *  onAccountUpdate
+
 ### 0.2.0
 * Added market, limit, stop, or stop limit options for submit-order
 * Added configuration node
