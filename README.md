@@ -10,6 +10,9 @@ Alpaca is a stock trading API.
 
 # Release Notes
 
+### 0.3.1
+* Changed submit-order and get-order to forward entire msg.payload object. This will allow the use of Bracket Orders as explained in the docs here: https://alpaca.markets/docs/trading-on-alpaca/orders/
+
 ### 0.3.0
 * Added on-event node for triggering on the following events:
     *  onStateChange

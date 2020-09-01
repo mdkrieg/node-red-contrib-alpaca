@@ -15,7 +15,7 @@ module.exports = function(RED) {
           paper: auth.PAPER || true
         });
         node.on('input', function(msg) {
-            var req = {};
+            var req = msg.payload;
             	req.symbol = msg.payload.symbol || msg.symbol || config.symbol;
             	req.qty = msg.payload.qty || msg.qty || config.qty;
             	req.type = msg.payload.type ||  msg.type || config.ordertype || "market";
@@ -47,7 +47,7 @@ module.exports = function(RED) {
           paper: auth.PAPER || true
         });
         node.on('input', function(msg) {
-        		var req = {};
+        		var req = msg.payload;
         			req.status = msg.payload.status || msg.status || 'all';
         			req.direction = msg.payload.direction || msg.direction || 'asc';
         		alpaca_conn.getOrders(req)
