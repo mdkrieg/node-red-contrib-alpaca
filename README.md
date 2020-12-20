@@ -10,6 +10,14 @@ Alpaca is a stock trading API.
 
 # Release Notes
 
+### 1.0.0 (currently alpha)
+* Created new universal "Alpaca" node which will pass msg.payload to any one of a long list of functions from the official API
+   * this provides a different way to access the same functionality as the previous nodes
+* Can also use msg.topic to specify which function to use
+* Embedded example codes (taken from the GitHub) into the configuration template
+* Added the "dot-status" to the Alpaca node, also indicates paper/live with either ring/dot shapes
+* Added "inject account" node. playing around with the idea of it for now.
+
 ### 0.3.1
 * Changed submit-order and get-order to forward entire msg.payload object. This will allow the use of Bracket Orders as explained in the docs here: https://alpaca.markets/docs/trading-on-alpaca/orders/
 
