@@ -1,115 +1,105 @@
+
 const ENV_API_KEY = process.env.APCA_API_KEY_ID;
 const ENV_API_SECRET = process.env.APCA_API_SECRET_KEY;
+const ENV_API_KEY_PAPER = process.env.APCA_API_KEY_ID_PAPER;
+const ENV_API_SECRET_PAPER = process.env.APCA_API_SECRET_KEY_PAPER;
 
 module.exports = function(RED) {
-
+    
     var Alpaca = require('@alpacahq/alpaca-trade-api');
     
-    function submitOrder(config) { 
+    var apca_cx = function(node,config){
+        var auth = RED.nodes.getNode(config.auth);
+        var cx;
+        var cx_status={
+            fill:"grey",
+            shape:"ring",
+            text:"null"
+        };
+        if(auth.PAPER === "true"){
+            cx = new Alpaca({
+                keyId: auth.API_KEY || ENV_API_KEY_PAPER, 
+                secretKey: auth.API_SECRET || ENV_API_SECRET_PAPER,
+                paper: true
+            });
+            cx_status.shape = "ring";
+        }else{
+            cx = new Alpaca({
+                keyId: auth.API_KEY || ENV_API_KEY, 
+                secretKey: auth.API_SECRET || ENV_API_SECRET,
+                paper: false
+            });
+            cx_status.shape = "dot";
+        }
+        cx_status.fill = (cx ? "green" : "red");
+        cx_status.text = (cx ? "connected" : "disconnected");
+        node.status(cx_status);
+        return cx;
+    };
+    
+    function validTopic(msg_topic,config_topic, validTopics){
+        if(validTopics.includes(config_topic)){
+            return config_topic;
+        }
+        else if(validTopics.includes(msg_topic)
+                && config_topic == "msgTopic"){
+            return msg_topic;
+        }
+        else {return null;} //invalid topic
+    }
+    
+    function universalAlpacaNode(config) { 
         RED.nodes.createNode(this,config);
         var node = this;
-        var auth = RED.nodes.getNode(config.auth);
-        var alpaca_conn = new Alpaca({
-          keyId: auth.API_KEY || ENV_API_KEY, 
-          secretKey: auth.API_SECRET || ENV_API_SECRET,
-          paper: auth.PAPER || true
-        });
+        var alpaca_conn = apca_cx(node,config);
+        const validFunctions = [
+            "getAccount",
+            "getAccountConfigurations",
+            "updateAccountConfigurations",
+            "getAccountActivities",
+            "getPortfolioHistory",
+            "createOrder",
+            "getOrders",
+            "getOrder",
+            "getOrderByClientOrderId",
+            "replaceOrder",
+            "cancelOrder",
+            "cancelAllOrders",
+            "getPosition",
+            "getPositions",
+            "closePosition",
+            "closeAllPositions",
+            "getAssets",
+            "getAsset",
+            "getCalendar",
+            "getWatchlists",
+            "getWatchlist",
+            "addWatchlist",
+            "addToWatchlist",
+            "updateWatchlist",
+            "deleteWatchlist",
+            "deleteFromWatchlist"
+        ];
         node.on('input', function(msg) {
-            var req = msg.payload;
-            	req.symbol = msg.payload.symbol || msg.symbol || config.symbol;
-            	req.qty = msg.payload.qty || msg.qty || config.qty;
-            	req.type = msg.payload.type ||  msg.type || config.ordertype || "market";
-            	if (req.type === "limit" || req.type === "stop_limit"){
-            		req.limit_price = msg.payload.limit_price ||  msg.limit_price || config.limit_price; }
-            	if (req.type === "stop" || req.type === "stop_limit"){
-            		req.stop_price = msg.payload.stop_price ||  msg.stop_price || config.stop_price; }
-            	req.time_in_force = msg.payload.tif ||  msg.tif || config.tif || "day";
-            	req.side = msg.payload.side ||  msg.side || config.side;
-            alpaca_conn.createOrder(req)
-            .then(function(resp) {
-                msg.payload.response = resp;
-                node.send(msg); })
-            .catch(function(err) {
-            	console.log("Error - Alpaca Submit Order:");
-            	console.log(err.error);
-            	msg.payload = err.error;
-            	node.send(msg);
-            });
+            msg.request = msg.payload;          //store original request
+            var success = function(resp) {
+                msg.payload = resp;                 //supply response object (PAYLOAD)
+                node.send(msg); };                  //send message
+            var error = function(err) {
+                msg.payload = err.error.message;    //supply error string (PAYLOAD)
+            	msg.error = err.error;              //supply error object
+            	node.send(msg); };                  //send message
+            var topic = validTopic(msg.topic,config.topic,validFunctions);
+            if(!topic){
+                error({"error":{"message":"Error - Invalid Function","topic":topic}});
+            }else{
+                alpaca_conn[topic](msg.payload).then(success).catch(error);
+            }
         });
     }
-    function getOrder(config) {
-        RED.nodes.createNode(this,config);
-        var node = this;
-        var auth = RED.nodes.getNode(config.auth);
-        var alpaca_conn = new Alpaca({
-          keyId: auth.API_KEY || ENV_API_KEY, 
-          secretKey: auth.API_SECRET || ENV_API_SECRET,
-          paper: auth.PAPER || true
-        });
-        node.on('input', function(msg) {
-        		var req = msg.payload;
-        			req.status = msg.payload.status || msg.status || 'all';
-        			req.direction = msg.payload.direction || msg.direction || 'asc';
-        		alpaca_conn.getOrders(req)
-        		.then(function(resp) {
-               msg.payload = resp;
-		      	node.send(msg); })
-		      .catch(function(err) {
-		      	console.log(err.error);
-            	msg.payload = err.error;
-            	node.send(msg);
-		      });
-		 });
-	}
-    function getAccount(config) {
-        RED.nodes.createNode(this,config);
-        var node = this;
-        var auth = RED.nodes.getNode(config.auth);
-        var alpaca_conn = new Alpaca({
-          keyId: auth.API_KEY || ENV_API_KEY, 
-          secretKey: auth.API_SECRET || ENV_API_SECRET,
-          paper: auth.PAPER || true
-        });
-        node.on('input', function(msg) {
-            alpaca_conn.getAccount()
-            .then(function(resp) {
-               msg.payload = resp;
-		      	node.send(msg); })
-            .catch(function(err) {
-            	console.log(err.error);
-            	msg.payload = err.error;
-            	node.send(msg);
-            });
-		 });
-	}
-	function getBars(config) {
-	    RED.nodes.createNode(this,config);
-        var node = this;
-        var auth = RED.nodes.getNode(config.auth);
-        var alpaca_conn = new Alpaca({
-          keyId: auth.API_KEY || ENV_API_KEY, 
-          secretKey: auth.API_SECRET || ENV_API_SECRET,
-          paper: auth.PAPER || true
-        });
-        node.on('input', function(msg) {
-        		var timescale = msg.payload.timescale || msg.timescale || config.timescale || 'minute';
-            var symbol = msg.payload.symbol || msg.symbol || config.symbol;
-            var limit = msg.payload.limit || msg.limit || config.limit || 1;
-            alpaca_conn.getBars(
-               timescale,
-               symbol,
-            	{limit: limit})
-            .then(function(resp) {
-               msg.payload = resp;
-		         node.send(msg); })
-		      .catch(function(err) {
-		      	console.log(err.error);
-            	msg.payload = err.error;
-            	node.send(msg);
-		      });
-        });
-	}
-	function onEvent(config) {
+    
+    
+	function socketAlpaca(config) {
 	    
 	    RED.nodes.createNode(this,config);
         var node = this;
@@ -206,9 +196,6 @@ module.exports = function(RED) {
         });
         updates_client.connect();
 	}
-    RED.nodes.registerType("submit-order",submitOrder);
-    RED.nodes.registerType("get-orders",getOrder);
-    RED.nodes.registerType("get-bars",getBars);
-    RED.nodes.registerType("get-account",getAccount);
-    RED.nodes.registerType("on-event",onEvent);
+    RED.nodes.registerType("Alpaca",universalAlpacaNode);
+    RED.nodes.registerType("Alpaca-Websocket",socketAlpaca);
 };
