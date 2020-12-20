@@ -1,277 +1,404 @@
-<script type="text/javascript">/* global RED */
+<script type="text/javascript">
+    /* global RED */
+    RED.nodes.registerType('Alpaca', {
+        category: 'alpaca',
+        color: '#EEEEEE',
+        defaults: {
+            name: { value: "" },
+            topic: { value: "msgTopic" },
+            auth: { value: "", type: "alpaca-config" }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "alpaca.svg",
+        label: function() {
+            if(this.topic=="msgTopic"){
+                return this.name || "Alpaca";
+            }else{
+                return this.name || this.topic;
+            }
+        }
+    });
+    RED.nodes.registerType('Alpaca-Websocket', {
+        category: 'alpaca',
+        color: '#EEEEEE',
+        defaults: {
+            name: { value: "" },
+            auth: { value: "", type: "alpaca-config" }
+        },
+        inputs: 0,
+        outputs: 1,
+        icon: "alpaca.svg",
+        label: function() {
+            return this.name || "Alpaca Websocket";
+        }
+    });
+    
 
-    RED.nodes.registerType('submit-order',{
-        category: 'alpaca',
-        color: '#EEEEEE',
-        defaults: {
-            name: {value:""},
-            symbol:{value:""},
-            ordertype: {value:"market"},
-            qty: {value:0},
-            limit_price: {value:0},
-            stop_price: {value:0},
-            tif: {value:"day"},
-            side: {value:""},
-			auth: {value:"", type:"alpaca-config"}
-        },
-        inputs:1,
-        outputs:1,
-        icon: "alpaca.svg",
-        label: function() {
-            return this.name||"submit order";
-        }
-    });
-    RED.nodes.registerType('get-orders',{
-        category: 'alpaca',
-        color: '#EEEEEE',
-        defaults: {
-            name: {value:""},
-			auth: {value:"", type:"alpaca-config"}
-        },
-        inputs:1,
-        outputs:1,
-        icon: "alpaca.svg",
-        label: function() {
-            return this.name||"get orders";
-        }
-    });
-    RED.nodes.registerType('get-bars',{
-        category: 'alpaca',
-        color: '#EEEEEE',
-        defaults: {
-            name: {value:""},
-            symbol: {value:""},
-            limit: {value:20},
-			auth: {value:"", type:"alpaca-config"}
-        },
-        inputs:1,
-        outputs:1,
-        icon: "alpaca.svg",
-        label: function() {
-            return this.name||"get bars";
-        		
-        }
-    });
-    RED.nodes.registerType('get-account',{
-        category: 'alpaca',
-        color: '#EEEEEE',
-        defaults: {
-            name: {value:""},
-			auth: {value:"", type:"alpaca-config"}
-        },
-        inputs:1,
-        outputs:1,
-        icon: "alpaca.svg",
-        label: function() {
-            return this.name||"get account";
-        }
-    });
-    RED.nodes.registerType('on-event',{
-        category: 'alpaca',
-        color: '#EEEEEE',
-        defaults: {
-            name: {value:""},
-			auth: {value:"", type:"alpaca-config"}
-        },
-        inputs:0,
-        outputs:1,
-        icon: "alpaca.svg",
-        label: function() {
-            return this.name||"on event";
-        }
-    });
 </script>
 
-
-<script type="text/x-red" data-template-name="submit-order">
+<!------------------------------------------------------------------------------------->
+<!------------------------------------------------------------------------------------->
+<!------------------------------------------------------------------------------------->
+<style type="text/css">
+    .copy-button{
+        position: relative;
+        right: 0px;
+        top: 0px;
+        float: right;
+        box-sizing: border-box;
+        background: white;
+        border: 1px solid #aa6767;
+        text-shadow: none;
+        font-size: 12px;
+        color: #666 !important;
+        padding: 6px 10px;
+        border-top-right-radius: 3px;
+        border-bottom-left-radius: 3px;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+</style>
+<script type="text/x-red" data-template-name="Alpaca">
+    <!-----------------API KEYS--------------------->
     <div class="form-row">
         <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
         <input type="text" id="node-input-auth" placeholder="API Keys">
     </div>
+    <!-----------------NAME--------------------->
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
+    <!-----------------FUNCTION--------------------->
     <div class="form-row">
-        <label for="node-input-symbol"><i class="fa fa-tag"></i> Symbol</label>
-        <input type="text" id="node-input-symbol" placeholder="Symbol">
-        <br />
-        <small style="padding-left: 100px;">Incoming <code>.symbol</code> overwrites this value</small>
-    </div>
-    <div class="form-row">
-        <label for="node-input-ordertype"><i class="fa fa-question"></i> Order Type</label>
-        <select id="node-input-ordertype" placeholder="Order Type">            
-            <option value="market">Market</option>
-            <option value="limit">Limit</option>
-            <option value="stop">Stop</option>
-            <option value="stop_limit">Stop Limit</option>
+        <label for="node-input-topic"><i class="fa fa-function"></i> Function</label>
+        <select id="node-input-topic" placeholder="Function">
+            <option value=	"msgTopic"	>	Use msg.Topic	</option>
+            <option value = "getAccount"> Get Account </option>
+            <option value = "getAccountConfigurations"> Get Account Configurations </option>
+            <option value = "updateAccountConfigurations"> Update Account Configurations </option>
+            <option value = "getAccountActivities"> Get Account Activities </option>
+            <option value = "getPortfolioHistory"> Get Portfolio History </option>
+            <option value = "createOrder"> Create Order </option>
+            <option value = "getOrders"> Get Orders </option>
+            <option value = "getOrder"> Get Order </option>
+            <option value = "getOrderByClientOrderId"> Get Order By Client Order Id </option>
+            <option value = "replaceOrder"> Replace Order </option>
+            <option value = "cancelOrder"> Cancel Order </option>
+            <option value = "cancelAllOrders"> Cancel All Orders </option>
+            <option value = "getPosition"> Get Position </option>
+            <option value = "getPositions"> Get Positions </option>
+            <option value = "closePosition"> Close Position </option>
+            <option value = "closeAllPositions"> Close All Positions </option>
+            <option value = "getAssets"> Get Assets </option>
+            <option value = "getAsset"> Get Asset </option>
+            <option value = "getCalendar"> Get Calendar </option>
+            <option value = "getWatchlists"> Get Watchlists </option>
+            <option value = "getWatchlist"> Get Watchlist </option>
+            <option value = "addWatchlist"> Add Watchlist </option>
+            <option value = "addToWatchlist"> Add To Watchlist </option>
+            <option value = "updateWatchlist"> Update Watchlist </option>
+            <option value = "deleteWatchlist"> Delete Watchlist </option>
+            <option value = "deleteFromWatchlist"> Delete From Watchlist </option>
         </select>
         <br />
-        <small style="padding-left: 100px;">Incoming <code>.ordertype</code> overwrites this value</small>
-        <br />
-        <small style="padding-left: 100px;">"market" | "limit" | "stop" | "stop_limit"</small>
     </div>
-    <div class="form-row">
-        <label for="node-input-qty"><i class="fa fa-hashtag"></i> Quantity</label>
-        <input type="text" id="node-input-qty" placeholder="0">
-        <br />
-        <small style="padding-left: 100px;">Incoming <code>.qty</code> overwrites this value</small>
-    </div>
-    <div class="form-row" id="order-limit_price">
-        <label for="node-input-limit_price"><i class="fa fa-usd"></i> Limit Price</label>
-        <input type="text" id="node-input-limit_price" placeholder="0.0">
-        <br />
-        <small style="padding-left: 100px;">Incoming <code>.limit_price</code> overwrites this value</small>
-    </div>
-    <div class="form-row" id="order-stop_price">
-        <label for="node-input-stop_price"><i class="fa fa-usd"></i> Stop Price</label>
-        <input type="text" id="node-input-stop_price" placeholder="0.0">
-        <br />
-        <small style="padding-left: 100px;">Incoming <code>.stop_price</code> overwrites this value</small>
-    </div>
-    <div class="form-row">
-        <label for="node-input-side"><i class="fa fa-suitcase"></i> Side</label>
-        <select id="node-input-side" placeholder="Side">
-            <option value="buy">Buy</option>
-            <option value="sell">Sell</option>
-        </select>
-        <br />
-        <small style="padding-left: 100px;">Incoming <code>.side</code> overwrites this value</small>
-        <br />
-        <small style="padding-left: 100px;">"buy" | "sell"</small>
-    </div>
-    <div class="form-row">
-        <label for="node-input-tif"><i class="fa fa-clock-o"></i> Time In Force</label>
-        <select id="node-input-tif" placeholder="Day">
-            <option value="day">Day</option>
-            <option value="gtc">Good-til-close</option>
-        </select>
-        <br />
-        <small style="padding-left: 100px;">Incoming <code>.tif</code> overwrites this value</small>
-        <br />
-        <small style="padding-left: 100px;">"day" | "gtc"</small>
-    </div>
+
+<div class="form-row alpaca-help" style="display:none;" data-topic="msgTopic"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">msg.topic = </span><button class="copy-button" type="button">Copy</button><span>
+[
+    "getAccount",
+    "getAccountConfigurations",
+    "updateAccountConfigurations",
+    "getAccountActivities",
+    "getPortfolioHistory",
+    "createOrder",
+    "getOrders",
+    "getOrder",
+    "getOrderByClientOrderId",
+    "replaceOrder",
+    "cancelOrder",
+    "cancelAllOrders",
+    "getPosition",
+    "getPositions",
+    "closePosition",
+    "closeAllPositions",
+    "getAssets",
+    "getAsset",
+    "getCalendar",
+    "getWatchlists",
+    "getWatchlist",
+    "addWatchlist",
+    "addToWatchlist",
+    "updateWatchlist",
+    "deleteWatchlist",
+    "deleteFromWatchlist"
+]</span></pre>
+</div><!--------</alpaca-help>-------->
+    <div class="form-row alpaca-help" style="display:none;" data-topic="getAccount"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}} </span>()
+    => Promise&lt;Account&gt;;
+<small>     ...this function takes no arguments</small></pre>
+</div><!--------</alpaca-help>-------->
+    <div class="form-row alpaca-help" style="display:none;" data-topic="getAccountConfigurations"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}} </span>()
+    => Promise&lt;AccountConfiguration&gt;;
+<small>     ...this function takes no arguments</small></pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="updateAccountConfigurations"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    "dtbp_check":"entry",
+    "no_shorting":false,
+    "pdt_check":"entry",
+    "suspend_trade":false,
+    "trade_confirm_email":"none"
+}</span>
+    ) => Promise&lt;AccountConfiguration&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getAccountActivities"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    activityTypes: string | string[], // Any valid activity type
+    until: Date,
+    after: Date,
+    direction: string,
+    date: Date,
+    pageSize: number,
+    pageToken: string
+}</span>
+    ) => Promise&lt;AccountActivity[]&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getPortfolioHistory"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    date_start: Date,
+    date_end: Date,
+    period: '1M' | '3M' | '6M' | '1A' | 'all' | 'intraday',
+    timeframe: '1Min' | '5Min' | '15Min' | '1H' | '1D',
+    extended_hours: Boolean
+}</span>
+    ) => Promise&lt;PortfolioHistory&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="createOrder"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    symbol: string, // any valid ticker symbol
+    qty: number,
+    side: 'buy' | 'sell',
+    type: 'market' | 'limit' | 'stop' | 'stop_limit' | 'trailing_stop',
+    time_in_force: 'day' | 'gtc' | 'opg' | 'ioc',
+    limit_price: number, // optional,
+    stop_price: number, // optional,
+    client_order_id: string, // optional,
+    extended_hours: boolean, // optional,
+    order_class: string, // optional,
+    take_profit: object, // optional,
+    stop_loss: object, // optional,
+    trail_price: string, // optional,
+    trail_percent: string // optional,
+}</span>
+    ) => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getOrders"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    status: 'open' | 'closed' | 'all',
+    after: Date,
+    until: Date,
+    limit: number,
+    direction: 'asc' | 'desc'
+}</span>
+    ) => Promise&lt;Order[]&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getOrder"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = uuid)
+    => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getOrderByClientOrderId"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = string)
+    => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="replaceOrder"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = uuid)
+    => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="cancelOrder"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = uuid)
+    => Promise</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="cancelAllOrders"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
+    => Promise
+<small>     ...this function takes no arguments</small></pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getPosition"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
+    => Promise&lt;Position&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getPositions"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
+    => Promise&lt;Position&gt;</pre>
+<small>     ...this function takes no arguments</small></pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="closePosition"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
+    => Promise</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="closeAllPositions"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
+    => Promise</pre>
+<small>     ...this function takes no arguments</small></pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getAssets"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    status: 'active' | 'inactive',
+    asset_class: string
+}</span>
+    ) => Promise&lt;Asset[]&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getAsset"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
+    => Promise&lt;Asset&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getCalendar"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    start: Date,
+    end: Date
+}</span>
+    ) => Promise&lt;Calendar[]&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getWatchlists"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+!!!WIP!!!
+</span>
+    ) => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getWatchlist"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+!!!WIP!!!
+</span>
+    ) => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="addWatchlist"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+!!!WIP!!!
+</span>
+    ) => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="addToWatchlist"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+!!!WIP!!!
+</span>
+    ) => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="updateWatchlist"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+!!!WIP!!!
+</span>
+    ) => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="deleteWatchlist"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+!!!WIP!!!
+</span>
+    ) => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="deleteFromWatchlist"><!--------<alpaca-help>-------->
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+!!!WIP!!!
+</span>
+    ) => Promise&lt;Order&gt;</pre>
+</div><!--------</alpaca-help>-------->
+
+<script type="text/javascript">
+/*global $*/
+    $(document).ready(function(){
+        $(".copy-button").on("click", function(evt) {
+            evt.preventDefault();
+            var ta = document.createElement('textarea');
+            ta.value = $(this).next()[0].innerText;
+            ta.style.position = 'absolute';
+            ta.style.left = '-3000px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            $(this).text("Copied!");
+            var self = $(this);
+            setTimeout(function() {
+                self.text("Copy");
+            },3000);
+        });
+        $("#dialog-form .form-row .highlight span.f").each(function(){
+            $(this).text(function(){
+                return $(this).text().replace(
+                    "{{topic}}",
+                    $(this).parent().parent().data("topic")
+                );
+            });
+        });
+        var showHelp = function(){
+            var newTopic = $("#node-input-topic").val();
+            $("#dialog-form .form-row.alpaca-help").each(function(){
+                var $row = $(this);
+                if($row.data("topic") == newTopic){
+                    $row.show();
+                }else{
+                    $row.hide();
+                }
+            });
+        };
+        $("#node-input-topic").on("change", showHelp);
+        $("#node-input-topic").ready(showHelp);
+    });
+</script>
 </script>
 
-<script type="text/x-red" data-help-name="submit-order">
-    <p>Node for submitting orders to Alpaca </p>
-       <h3>Outputs</h3>
-       <dl class="message-properties">
-       <dt>payload
-           <span class="property-type">object</span>
-       </dt>
-   <h3>Details</h3>
-   <p>Payload is the full response object from the API</p>
-</script>
-
-
-<script type="text/x-red" data-template-name="get-orders">
-    <div class="form-row">
-        <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
-        <input type="text" id="node-input-auth" placeholder="API Keys">
-    </div>
-    <div class="form-row">
-        <label for="node-input-limit"><i class="fa-fa-hashtag"></i> Return Limit</label>
-        <input type="text" id="node-input-limit" placeholder="Limit">
-    </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-</script>
-
-<script type="text/x-red" data-help-name="get-orders">
-    <p>Node for retrieving a list of orders associated with your account </p>
-       <h3>Outputs</h3>
-       <dl class="message-properties">
-       <dt>payload
-           <span class="property-type">object</span>
-       </dt>
-   <h3>Details</h3>
-   <p>Payload is the full response object from the API</p>
-</script>
-
-
-<script type="text/x-red" data-template-name="get-account">
-    <div class="form-row">
-        <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
-        <input type="text" id="node-input-auth" placeholder="API Keys">
-    </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-</script>
-
-<script type="text/x-red" data-help-name="get-account">
-    <p>Node for retrieving your account details </p>
-       <h3>Outputs</h3>
-       <dl class="message-properties">
-       <dt>payload
-           <span class="property-type">object</span>
-       </dt>
-   <h3>Details</h3>
-   <p>Payload is the full response object from the API</p>
-</script>
-
-
-<script type="text/x-red" data-template-name="get-bars">
-    <div class="form-row">
-        <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
-        <input type="text" id="node-input-auth" placeholder="API Keys">
-    </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-    <div class="form-row">
-        <label for="node-input-symbol"><i class="fa fa-tag"></i> Symbol</label>
-        <input type="text" id="node-input-symbol" placeholder="Symbol">
-        <br />
-        <small style="padding-left: 100px;">Incoming <code>.symbol</code> overwrites this value</small>
-    </div>
-    <div class="form-row">
-        <label for="node-input-limit"><i class="fa fa-history"></i> Limit</label>
-        <input type="text" id="node-input-limit" placeholder="Limit">
-        <br />
-        <small style="padding-left: 100px;">Incoming <code>.limit</code> overwrites this value</small>
-    </div>
-</script>
-
-<script type="text/x-red" data-help-name="get-bars">
-    <p>Node for retrieving your account details </p>
-       <h3>Outputs</h3>
-       <dl class="message-properties">
-       <dt>payload
-           <span class="property-type">object</span>
-       </dt>
-   <h3>Details</h3>
-   <p>Payload is the full response object from the API</p>
-</script>
-
-<script type="text/x-red" data-template-name="on-event">
-    <div class="form-row">
-        <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
-        <input type="text" id="node-input-auth" placeholder="API Keys">
-    </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-</script>
-
-<script type="text/x-red" data-help-name="on-event">
+<script type="text/x-red" data-help-name="Alpaca">
     <p>Node for reacting various events such as order and account status changes</p>
-       <h3>Outputs</h3>
-       <dl class="message-properties">
-       <dt>payload
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload
            <span class="property-type">object</span>
        </dt>
-   <h3>Details</h3>
-   <p>Payload is the full response object from the API</p>
-       <dt>topic
+        <h3>Details</h3>
+        <p>Payload is the full response object from the API</p>
+        <dt>topic
            <span class="property-type">string</span>
        </dt>
-   <h3>Details</h3>
-   <p>Topic is the type of event being emitted from the node</p>
+        <h3>Details</h3>
+        <p>Topic is the type of event being emitted from the node</p>
+</script>
+
+<!------------------------------------------------------------------------------------->
+
+<script type="text/x-red" data-template-name="Alpaca-Websocket">
+    <div class="form-row">
+        <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
+        <input type="text" id="node-input-auth" placeholder="API Keys">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="Alpaca-Websocket">
+    <p>Node for reacting various events such as order and account status changes</p>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+           <span class="property-type">object</span>
+       </dt>
+        <h3>Details</h3>
+        <p>Payload is the full response object from the API</p>
+        <dt>topic
+           <span class="property-type">string</span>
+       </dt>
+        <h3>Details</h3>
+        <p>Topic is the type of event being emitted from the node</p>
 </script>
