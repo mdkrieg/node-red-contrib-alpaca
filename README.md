@@ -1,6 +1,6 @@
 Alpaca API: https://alpaca.markets/
 
-Introduction: https://www.matthewdkrieg.com/projects/node-red-node-for-the-alpaca-stock-trading-api
+GitHub: https://github.com/mdkrieg/node-red-contrib-alpaca
 
 # Alpaca Trading with Node-RED
 This project wraps the official Node.js library for Alpaca into useful nodes for Node-RED.
