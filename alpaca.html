@@ -24,13 +24,15 @@
         color: '#EEEEEE',
         defaults: {
             name: { value: "" },
-            auth: { value: "", type: "alpaca-config" }
+            auth: { value: "", type: "alpaca-config" },
+            topic: { value: "", required: true },
+            usePolygon: { value: true, type: "boolean" }
         },
         inputs: 0,
         outputs: 1,
         icon: "alpaca.svg",
         label: function() {
-            return this.name || "Alpaca Websocket";
+            return this.name || this.topic;
         }
     });
     
@@ -359,7 +361,9 @@
 </script>
 
 <script type="text/x-red" data-help-name="Alpaca">
-    <p>Node for reacting various events such as order and account status changes</p>
+    <p>Universal node that wraps all of the </p>
+    <h3>Inputs</h3>
+    <p>See configuration panel for examples of each request </p>
     <h3>Outputs</h3>
     <dl class="message-properties">
         <dt>payload
@@ -384,6 +388,14 @@
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic"><i class="icon-tag"></i> Topic</label>
+        <input type="text" id="node-input-topic" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-usePolygon"><i class="icon-tag"></i> Use Polygon.io</label>
+        <input type="checkbox" id="node-input-polygon" checked>
     </div>
 </script>
 
