@@ -105,7 +105,7 @@ module.exports = function(RED) {
         var node = this;
         var auth = RED.nodes.getNode(config.auth);
 	var socket = RED.nodes.getNode(config.socket);
-	var sub_keys = RED.nodes.getNode(config.sub_keys).split(","); // TODO: improve
+	var sub_keys = RED.nodes.getNode(config.subkeys).split(","); // TODO: improve
         var alpaca_conn = new Alpaca({
           keyId: auth.API_KEY || ENV_API_KEY, 
           secretKey: auth.API_SECRET || ENV_API_SECRET,
@@ -127,7 +127,7 @@ module.exports = function(RED) {
             var msg = {
                 'topic':'onConnect',
                 'payload':'Connected'};
-	    data_client.subscribe(sub_keys);
+	    data_client.subscribe(subkeys);
             node.send(msg);
 		cx_status.fill = "green";
 	        node.status(cx_status);
@@ -241,6 +241,6 @@ module.exports = function(RED) {
         updates_client.connect();
 	}
     RED.nodes.registerType("Alpaca",universalAlpacaNode);
-    RED.nodes.registerType("Alpaca-Websocket",socketAlpacaData);
-    RED.nodes.registerType("Alpaca-Websocket",socketAlpacaUpdates);
+    RED.nodes.registerType("Alpaca-Datasocket",socketAlpacaData);
+    RED.nodes.registerType("Alpaca-Updatesocket",socketAlpacaUpdates);
 };
