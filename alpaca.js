@@ -133,7 +133,7 @@ module.exports = function(RED) {
 	        node.status(cx_status);
         });
         data_client.onDisconnect(() => {
-            var msg {
+            var msg = {
                 'topic':'onDisconnect',
                 'payload':'Disconnected'};
             node.send(msg);
