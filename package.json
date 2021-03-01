@@ -20,7 +20,6 @@
     "nodes": {
       "alpaca": "alpaca.js",
       "alpaca-simple": "simple.js",
-      "alpaca-inject": "inject-account.js",
       "alpaca-config": "config.js"
     }
   },
