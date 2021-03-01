@@ -105,7 +105,7 @@ module.exports = function(RED) {
         var node = this;
         var auth = RED.nodes.getNode(config.auth);
 	var socket = RED.nodes.getNode(config.socket);
-	var sub_keys = RED.nodes.getNode(config.subkeys).split(","); // TODO: improve
+	var subkeys = RED.nodes.getNode(config.subkeys).split(","); // TODO: improve
         var alpaca_conn = new Alpaca({
           keyId: auth.API_KEY || ENV_API_KEY, 
           secretKey: auth.API_SECRET || ENV_API_SECRET,
@@ -140,7 +140,7 @@ module.exports = function(RED) {
 		cx_status.fill = "grey";
 	        node.status(cx_status);
         })
-	if(socket == "onStateChange"){
+	if(socket == "onStateChange" || true){
 		data_client.onStateChange(newState => {
 		    var msg = {
 			'topic':'onStateChange',
@@ -149,7 +149,7 @@ module.exports = function(RED) {
 		    node.send(msg);
 		})
 	}
-	if(socket == "onStockTrades"){
+	if(socket == "onStockTrades" || true){
 		data_client.onStockTrades(function (subject, data) {
 		    var msg = {
 			'topic':'onStockTrades',
@@ -159,7 +159,7 @@ module.exports = function(RED) {
 		    node.send(msg);
 		})
 	}
-	if(socket == "onStockQuotes"){
+	if(socket == "onStockQuotes" || true){
 		data_client.onStockQuotes(function (subject, data) {
 		    var msg = {
 			'topic':'onStockQuotes',
@@ -169,7 +169,7 @@ module.exports = function(RED) {
 		    node.send(msg);
 		})
 	}
-	if(socket == "onStockAggSec"){
+	if(socket == "onStockAggSec" || true){
 		data_client.onStockAggSec(function (subject, data) {
 		    var msg = {
 			'topic':'onStockAggSec',
@@ -179,7 +179,7 @@ module.exports = function(RED) {
 		    node.send(msg);
 		})
 	}
-	if(socket == "onStockAggMin"){
+	if(socket == "onStockAggMin" || true){
 		data_client.onStockAggMin(function (subject, data) {
 		    var msg = {
 			'topic':'onStockAggMin',
