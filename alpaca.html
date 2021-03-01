@@ -19,14 +19,32 @@
             }
         }
     });
-    RED.nodes.registerType('Alpaca-Websocket', {
+    RED.nodes.registerType('Alpaca-Datasocket', {
         category: 'alpaca',
         color: '#EEEEEE',
         defaults: {
             name: { value: "" },
             auth: { value: "", type: "alpaca-config" },
+            subkeys: { value: "", type: "string" },
             topic: { value: "", required: true },
             usePolygon: { value: true, type: "boolean" }
+        },
+        inputs: 0,
+        outputs: 1,
+        icon: "alpaca.svg",
+        label: function() {
+            return this.name || this.topic;
+        }
+    });
+    
+
+    RED.nodes.registerType('Alpaca-Updatesocket', {
+        category: 'alpaca',
+        color: '#EEEEEE',
+        defaults: {
+            name: { value: "" },
+            auth: { value: "", type: "alpaca-config" },
+            topic: { value: "", required: true }
         },
         inputs: 0,
         outputs: 1,
@@ -380,7 +398,7 @@
 
 <!------------------------------------------------------------------------------------->
 
-<script type="text/x-red" data-template-name="Alpaca-Websocket">
+<script type="text/x-red" data-template-name="Alpaca-Datasocket">
     <div class="form-row">
         <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
         <input type="text" id="node-input-auth" placeholder="API Keys">
@@ -390,8 +408,12 @@
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-input-topic"><i class="icon-tag"></i> Topic</label>
-        <input type="text" id="node-input-topic" placeholder="Name">
+        <label for="node-input-subkeys"><i class="icon-tag"></i> Subscription Keys</label>
+        <input type="text" id="node-input-topic" placeholder="T.FB,Q.AAPL,alpacadatav1/T.FB,alpacadatav1/Q.AAPL">
+        <p>Supply a comma separated value which will be split and supplied to the function from the api</p>
+        <p>const keys = USE_POLYGON ? "T.FB,Q.AAPL,A.FB,AM.AAPL" : <br>
+                "alpacadatav1/T.FB,alpacadatav1/Q.AAPL,alpacadatav1/AM.AAPL,alpacadatav1/AM.FB"
+                </p>
     </div>
     <div class="form-row">
         <label for="node-input-usePolygon"><i class="icon-tag"></i> Use Polygon.io</label>
@@ -399,18 +421,75 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="Alpaca-Websocket">
-    <p>Node for reacting various events such as order and account status changes</p>
+<script type="text/x-red" data-help-name="Alpaca-Datasocket">
+    <p>Node for emitting events from the Alpaca Data Client</p>
+    <h3>Config</h3>
+    <dl class="message-properties">
+        <dt>subscribe keys
+           <span class="property-type">string</span>
+       </dt>
+        <h3>Details</h3>
+        <p>Supply a comma separated value which will be split and supplied to the function from the api</p>
+        <dt>topic
+           <span class="property-type">string</span>
+       </dt>
+    </dl>
     <h3>Outputs</h3>
     <dl class="message-properties">
         <dt>payload
            <span class="property-type">object</span>
        </dt>
         <h3>Details</h3>
-        <p>Payload is the full response object from the API</p>
+        <p>Payload is the response object from the API</p>
+        <dt>topic
+           <span class="property-type">string</span>
+       </dt>
+       <dt>topic
+           <span class="property-type">object</span>
+       </dt>
+        <h3>Details</h3>
+        <p>Payload is the response object from the API</p>
+        <dt>topic
+           <span class="property-type">string</span>
+       </dt>
+    </dl>
+        <h3>Reference</h3>
+        <p><a href="https://github.com/alpacahq/alpaca-trade-api-js/blob/master/examples/websocket_listener.js">SDK Example from GitHub</a></p>
+</script>
+
+<script type="text/x-red" data-template-name="Alpaca-Updatesocket">
+    <div class="form-row">
+        <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
+        <input type="text" id="node-input-auth" placeholder="API Keys">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <!--div class="form-row">
+        <label for="node-input-topic"><i class="icon-tag"></i> Topic</label>
+        <input type="text" id="node-input-topic" placeholder="Name">
+    </div-->
+    <p>Subscribes to 'trade_updates' and 'account updates' only.</p>
+</script>
+
+<script type="text/x-red" data-help-name="Alpaca-Updatesocket">
+    <p>Node for emitting events from the alpaca data socket on 'trade_updates' and 'account updates'</p>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+           <span class="property-type">object</span>
+       </dt>
+        <h3>Details</h3>
+        <p>Payload is the response object from the API</p>
         <dt>topic
            <span class="property-type">string</span>
        </dt>
         <h3>Details</h3>
-        <p>Topic is the type of event being emitted from the node</p>
+        <p>Topic is the type of event being emitted from the node<br>
+		Possible values are:<br>
+        "onStateChange",<br>
+		"onOrderUpdate",<br>
+		"onAccountUpdate"</p>
+        
 </script>
