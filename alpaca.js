@@ -144,7 +144,8 @@ module.exports = function(RED) {
 		data_client.onStateChange(newState => {
 		    var msg = {
 			'topic':'onStateChange',
-			'payload':newState;
+			'payload':newState
+		    };
 		    node.send(msg);
 		})
 	}
@@ -154,7 +155,7 @@ module.exports = function(RED) {
 			'topic':'onStockTrades',
 			'payload':data,
 			'subject':subject
-		    }
+		    };
 		    node.send(msg);
 		})
 	}
