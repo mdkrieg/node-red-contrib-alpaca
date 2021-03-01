@@ -408,16 +408,16 @@
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
+        <label for="node-input-usePolygon"><i class="icon-tag"></i> Use Polygon.io</label>
+        <input type="checkbox" id="node-input-polygon" checked>
+    </div>
+    <div class="form-row">
         <label for="node-input-subkeys"><i class="icon-tag"></i> Subscription Keys</label>
         <input type="text" id="node-input-topic" placeholder="T.FB,Q.AAPL,alpacadatav1/T.FB,alpacadatav1/Q.AAPL">
         <p>Supply a comma separated value which will be split and supplied to the function from the api</p>
         <p>const keys = USE_POLYGON ? "T.FB,Q.AAPL,A.FB,AM.AAPL" : <br>
                 "alpacadatav1/T.FB,alpacadatav1/Q.AAPL,alpacadatav1/AM.AAPL,alpacadatav1/AM.FB"
                 </p>
-    </div>
-    <div class="form-row">
-        <label for="node-input-usePolygon"><i class="icon-tag"></i> Use Polygon.io</label>
-        <input type="checkbox" id="node-input-polygon" checked>
     </div>
 </script>
 
