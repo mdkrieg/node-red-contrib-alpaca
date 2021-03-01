@@ -122,6 +122,7 @@ module.exports = function(RED) {
             fill:"grey",
             shape:"dot"
         };
+	node.status(cx_status);
 		
         const data_client = alpaca_conn.data_ws;
         data_client.onConnect(function () {
