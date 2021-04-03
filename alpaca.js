@@ -99,8 +99,105 @@ module.exports = function(RED) {
     }
     
     
-	function socketAlpaca(config) {
+	function socketAlpacaData(config) {
 	    
+	    RED.nodes.createNode(this,config);
+        var node = this;
+        var auth = RED.nodes.getNode(config.auth);
+	var socket = RED.nodes.getNode(config.socket);
+	var subkeys = [RED.nodes.getNode(config.subkeys)];// TODO: improve
+	//var subkeys = subkeys_raw.split(","); 
+        var alpaca_conn = new Alpaca({
+          keyId: auth.API_KEY || ENV_API_KEY, 
+          secretKey: auth.API_SECRET || ENV_API_SECRET,
+          paper: auth.PAPER || true
+        });
+	const validFunctions = [
+		"onStateChange",
+		"onStockTrades",
+		"onStockQuotes",
+		"onStockAggMin"]; //not used currently
+      
+        var cx_status={
+            fill:"grey",
+            shape:"dot"
+        };
+	node.status(cx_status);
+		
+        const data_client = alpaca_conn.data_ws;
+        data_client.onConnect(function () {
+            var msg = {
+                'topic':'onConnect',
+                'payload':'Connected'};
+	    data_client.subscribe(subkeys);
+            node.send(msg);
+		cx_status.fill = "green";
+	        node.status(cx_status);
+        });
+        data_client.onDisconnect(() => {
+            var msg = {
+                'topic':'onDisconnect',
+                'payload':'Disconnected'};
+            node.send(msg);
+		cx_status.fill = "grey";
+	        node.status(cx_status);
+        })
+	if(socket == "onStateChange" || true){
+		data_client.onStateChange(newState => {
+		    var msg = {
+			'topic':'onStateChange',
+			'payload':newState
+		    };
+		    node.send(msg);
+		})
+	}
+	if(socket == "onStockTrades" || true){
+		data_client.onStockTrades(function (subject, data) {
+		    var msg = {
+			'topic':'onStockTrades',
+			'payload':data,
+			'subject':subject
+		    };
+		    node.send(msg);
+		})
+	}
+	if(socket == "onStockQuotes" || true){
+		data_client.onStockQuotes(function (subject, data) {
+		    var msg = {
+			'topic':'onStockQuotes',
+			'payload':data,
+			'subject':subject
+		    }
+		    node.send(msg);
+		})
+	}
+	if(socket == "onStockAggSec" || true){
+		data_client.onStockAggSec(function (subject, data) {
+		    var msg = {
+			'topic':'onStockAggSec',
+			'payload':data,
+			'subject':subject
+		    }
+		    node.send(msg);
+		})
+	}
+	if(socket == "onStockAggMin" || true){
+		data_client.onStockAggMin(function (subject, data) {
+		    var msg = {
+			'topic':'onStockAggMin',
+			'payload':data,
+			'subject':subject
+		    }
+		    node.send(msg);
+		})
+	}
+		
+        data_client.connect();
+}
+		
+
+	function socketAlpacaUpdates(config) {
+
 	    RED.nodes.createNode(this,config);
         var node = this;
         var auth = RED.nodes.getNode(config.auth);
@@ -109,65 +206,15 @@ module.exports = function(RED) {
           secretKey: auth.API_SECRET || ENV_API_SECRET,
           paper: auth.PAPER || true
         });
-        /*
-        const data_client = alpaca_conn.data_ws;
-        data_client.onConnect(function () {
-            var msg = {
-                'topic':'onConnect',
-                'payload':'Connected'};
-            node.send(msg);
-        });
-        data_client.onDisconnect(() => {
-            var msg {
-                'topic':'onDisconnect',
-                'payload':'Disconnected'};
-            node.send(msg);
-        })
-        data_client.onStateChange(newState => {
-            var msg = {
-                'topic':'onStateChange',
-                'payload':`State changed to ${newState}`;
-            node.send(msg);
-        })
-        data_client.onStockTrades(function (subject, data) {
-            var msg = {
-                'topic':'onStockTrades',
-                'payload':data,
-                'subject':subject
-            }
-            node.send(msg);
-        })
-        data_client.onStockQuotes(function (subject, data) {
-            var msg = {
-                'topic':'onStockQuotes',
-                'payload':data,
-                'subject':subject
-            }
-            node.send(msg);
-        })
-        data_client.onStockAggSec(function (subject, data) {
-            var msg = {
-                'topic':'onStockAggSec',
-                'payload':data,
-                'subject':subject
-            }
-            node.send(msg);
-        })
-        data_client.onStockAggMin(function (subject, data) {
-            var msg = {
-                'topic':'onStockAggMin',
-                'payload':data,
-                'subject':subject
-            }
-            node.send(msg);
-        })
-        
-        data_client.connect();
-        */
+	const validFunctions = [
+		"onStateChange",
+		"onOrderUpdate",
+		"onAccountUpdate"];
+		
         const updates_client = alpaca_conn.trade_ws;
         updates_client.onConnect(function () {
-            console.log("Alpaca Event Listener Connected");
             const trade_keys = ['trade_updates', 'account_updates'];
+            console.log("Alpaca Event Listener Connected");
             updates_client.subscribe(trade_keys);
         });
         updates_client.onDisconnect(() => {
@@ -197,5 +244,6 @@ module.exports = function(RED) {
         updates_client.connect();
 	}
     RED.nodes.registerType("Alpaca",universalAlpacaNode);
-    RED.nodes.registerType("Alpaca-Websocket",socketAlpaca);
+    RED.nodes.registerType("Alpaca-Datasocket",socketAlpacaData);
+    RED.nodes.registerType("Alpaca-Updatesocket",socketAlpacaUpdates);
 };

@@ -20,12 +20,11 @@
     "nodes": {
       "alpaca": "alpaca.js",
       "alpaca-simple": "simple.js",
-      "alpaca-inject": "inject-account.js",
       "alpaca-config": "config.js"
     }
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "1.0.0alpha"
+  "version": "1.1.0"
 }
