@@ -11,11 +11,14 @@ Node-RED is a visual programming tool based on NodeJS.
 Alpaca is a stock trading API.
 
 # Release Notes
+### 1.1.1
+* Merged previous two updates and publish to NPM
+
 ### 1.1.0
 * Developed Websocket node into Datasocket and Updatesocket
 
 ### 1.0.1
-* submit-order node had the wrong text in the html display (corrected to ".type")
+* Submit-order node had the wrong text in the html display (corrected to ".type")
 
 ### 1.0.0
 * Created new universal "Alpaca" node which will pass msg.payload to any one of a long list of functions from the official API
