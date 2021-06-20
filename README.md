@@ -11,6 +11,16 @@ Node-RED is a visual programming tool based on NodeJS.
 Alpaca is a stock trading API.
 
 # Release Notes
+### 2.0.0
+#### Major Changes
+* Removing "simple" nodes and publishing to separate project
+* Removing socket nodes as I don't think they work (replacing with one that does work)
+
+#### Minor Changes
+* Adding websocket v2 node
+* Adding Get Trade and Get Quote (aka "Get Last Trade/Quote") functions to main Alpaca node
+* Updating help for Watchlist functions
+
 ### 1.1.1
 * Merged previous two updates and publish to NPM
 
@@ -26,7 +36,7 @@ Alpaca is a stock trading API.
 * Can also use msg.topic to specify which function to use
 * Embedded example codes (taken from the GitHub) into the configuration template
 * Added the "dot-status" to the Alpaca node, also indicates paper/live with either ring/dot shapes
-* Added "inject account" node. playing around with the idea of it for now.
+* (note: this is lost / missing) Added "inject account" node. playing around with the idea of it for now.
 
 ### 0.3.1
 * Changed submit-order and get-order to forward entire msg.payload object. This will allow the use of Bracket Orders as explained in the docs here: https://alpaca.markets/docs/trading-on-alpaca/orders/

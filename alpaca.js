@@ -58,6 +58,7 @@ module.exports = function(RED) {
             "updateAccountConfigurations",
             "getAccountActivities",
             "getPortfolioHistory",
+            "getBarsV2",
             "createOrder",
             "getOrders",
             "getOrder",
@@ -69,6 +70,8 @@ module.exports = function(RED) {
             "getPositions",
             "closePosition",
             "closeAllPositions",
+            "lastTrade",
+            "lastQuote",
             "getAssets",
             "getAsset",
             "getCalendar",
@@ -92,158 +95,103 @@ module.exports = function(RED) {
             var topic = validTopic(msg.topic,config.topic,validFunctions);
             if(!topic){
                 error({"error":{"message":"Error - Invalid Function","topic":topic}});
+            }else if(topic == "getBarsV2"){
+                alpaca_conn[topic](msg.symbol, msg.payload).then(success).catch(error);
+            // BEGIN WATCHLIST CHECKS --- TODO: separate watchlist stuff into separate node
+            }else if([  "addWatchlist",
+                        "addToWatchlist",
+                        "updateWatchlist",
+                        "deleteFromWatchlist"].includes(topic)){
+                // above tests for specific functions that use multiple arguments
+                let name = msg.payload.name || msg.payload.id;
+                let ticker = msg.payload.ticker || msg.payload.tickers;
+                ticker = topic == "addWatchlist" ? ticker || [] : ticker || ""; //catch for optional args
+                alpaca_conn[topic](name, ticker).then(success).catch(error);
             }else{
+                // normal passthru ---- functions that take no input don't seem to mind if they get an input
                 alpaca_conn[topic](msg.payload).then(success).catch(error);
             }
         });
     }
     
     
-	function socketAlpacaData(config) {
-	    
+	function socketAlpacaDataV2(config) {
 	    RED.nodes.createNode(this,config);
         var node = this;
-        var auth = RED.nodes.getNode(config.auth);
-	var socket = RED.nodes.getNode(config.socket);
-	var subkeys = [RED.nodes.getNode(config.subkeys)];// TODO: improve
-	//var subkeys = subkeys_raw.split(","); 
+        var socket = RED.nodes.getNode(config.socket);
+        var auth = RED.nodes.getNode(config.socket.wsauth);
+    	var subFor = RED.nodes.getNode(config.subscribeFor);
+    	var symbol = [RED.nodes.getNode(config.symbol)];// TODO: improve
+    	
         var alpaca_conn = new Alpaca({
           keyId: auth.API_KEY || ENV_API_KEY, 
           secretKey: auth.API_SECRET || ENV_API_SECRET,
-          paper: auth.PAPER || true
+          feed: socket.feed || "iex"
         });
-	const validFunctions = [
-		"onStateChange",
-		"onStockTrades",
-		"onStockQuotes",
-		"onStockAggMin"]; //not used currently
-      
+        
         var cx_status={
             fill:"grey",
             shape:"dot"
         };
-	node.status(cx_status);
-		
-        const data_client = alpaca_conn.data_ws;
+    	node.status(cx_status);
+    		
+        const data_client = alpaca_conn.data_stream_v2;
+        
         data_client.onConnect(function () {
             var msg = {
                 'topic':'onConnect',
                 'payload':'Connected'};
-	    data_client.subscribe(subkeys);
-            node.send(msg);
-		cx_status.fill = "green";
-	        node.status(cx_status);
+            cx_status.fill = "green";
+            node.status(cx_status);
+            
+    	    data_client.subscribeForTrades([symbol]);
+    	    node.send({
+                "topic":"subscribeForTrades",
+                "payload": symbol + " - subscribed for trades",
+                "symbol": symbol
+            });
         });
+        data_client.onError((err) => {
+            node.error(err, {});
+        });
+        data_client.onStockTrade((trade) => {
+            let msg = {};
+            msg.topic = "onStockTrade";
+            msg.payload = trade;
+            node.send(msg);
+        });
+        data_client.onStockQuote((quote) => {
+            let msg = {};
+            msg.topic = "onStockQuote";
+            msg.payload = quote;
+            node.send(msg);
+        });
+        data_client.onStockBar((bar) => {
+            let msg = {};
+            msg.topic = "onStockBar";
+            msg.payload = bar;
+            node.send(msg);
+        });
+        data_client.onStateChange((state) => {
+            let msg = {};
+            msg.topic = "onStateChange";
+            msg.payload = state;
+            node.send(msg);
+        });
+        
         data_client.onDisconnect(() => {
             var msg = {
                 'topic':'onDisconnect',
                 'payload':'Disconnected'};
             node.send(msg);
-		cx_status.fill = "grey";
+		    cx_status.fill = "grey";
 	        node.status(cx_status);
-        })
-	if(socket == "onStateChange" || true){
-		data_client.onStateChange(newState => {
-		    var msg = {
-			'topic':'onStateChange',
-			'payload':newState
-		    };
-		    node.send(msg);
-		})
-	}
-	if(socket == "onStockTrades" || true){
-		data_client.onStockTrades(function (subject, data) {
-		    var msg = {
-			'topic':'onStockTrades',
-			'payload':data,
-			'subject':subject
-		    };
-		    node.send(msg);
-		})
-	}
-	if(socket == "onStockQuotes" || true){
-		data_client.onStockQuotes(function (subject, data) {
-		    var msg = {
-			'topic':'onStockQuotes',
-			'payload':data,
-			'subject':subject
-		    }
-		    node.send(msg);
-		})
-	}
-	if(socket == "onStockAggSec" || true){
-		data_client.onStockAggSec(function (subject, data) {
-		    var msg = {
-			'topic':'onStockAggSec',
-			'payload':data,
-			'subject':subject
-		    }
-		    node.send(msg);
-		})
-	}
-	if(socket == "onStockAggMin" || true){
-		data_client.onStockAggMin(function (subject, data) {
-		    var msg = {
-			'topic':'onStockAggMin',
-			'payload':data,
-			'subject':subject
-		    }
-		    node.send(msg);
-		})
-	}
-		
+        });
+
         data_client.connect();
-}
+    }
 		
 
-	function socketAlpacaUpdates(config) {
-
-	    RED.nodes.createNode(this,config);
-        var node = this;
-        var auth = RED.nodes.getNode(config.auth);
-        var alpaca_conn = new Alpaca({
-          keyId: auth.API_KEY || ENV_API_KEY, 
-          secretKey: auth.API_SECRET || ENV_API_SECRET,
-          paper: auth.PAPER || true
-        });
-	const validFunctions = [
-		"onStateChange",
-		"onOrderUpdate",
-		"onAccountUpdate"];
-		
-        const updates_client = alpaca_conn.trade_ws;
-        updates_client.onConnect(function () {
-            const trade_keys = ['trade_updates', 'account_updates'];
-            console.log("Alpaca Event Listener Connected");
-            updates_client.subscribe(trade_keys);
-        });
-        updates_client.onDisconnect(() => {
-            console.log("Alpaca Event Listener Disconnected");
-        });
-        updates_client.onStateChange(newState => {
-            var msg = {
-                'topic':'onStateChange',
-                'payload':newState
-            };
-            node.send(msg);
-        });
-        updates_client.onOrderUpdate(data => {
-            var msg = {
-                'topic':'onOrderUpdate',
-                'payload':data
-            };
-            node.send(msg);
-        });
-        updates_client.onAccountUpdate(data => {
-            var msg = {
-                'topic':'onAccountUpdate',
-                'payload':data
-            };
-            node.send(msg);
-        });
-        updates_client.connect();
-	}
     RED.nodes.registerType("Alpaca",universalAlpacaNode);
-    RED.nodes.registerType("Alpaca-Datasocket",socketAlpacaData);
-    RED.nodes.registerType("Alpaca-Updatesocket",socketAlpacaUpdates);
+    RED.nodes.registerType("Alpaca-DataV2",socketAlpacaDataV2);
 };

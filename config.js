@@ -5,4 +5,9 @@ module.exports = function(RED) {
         this.API_SECRET = n.secretkey;
         this.PAPER = n.paper;
     });
+    RED.nodes.registerType("alpaca-websocket", function(n) {       
+        RED.nodes.createNode(this,n);
+        this.wsauth = n.keyid;
+        this.feed = n.feed;
+    });
  };

@@ -19,32 +19,14 @@
             }
         }
     });
-    RED.nodes.registerType('Alpaca-Datasocket', {
+    RED.nodes.registerType('Alpaca-Websocket', {
         category: 'alpaca',
         color: '#EEEEEE',
         defaults: {
             name: { value: "" },
-            auth: { value: "", type: "alpaca-config" },
-            subkeys: { value: "" },
-            //topic: { value: "", required: true },
-            usePolygon: { value: true, type: "boolean" }
-        },
-        inputs: 0,
-        outputs: 1,
-        icon: "alpaca.svg",
-        label: function() {
-            return this.name; // || this.topic;
-        }
-    });
-    
-
-    RED.nodes.registerType('Alpaca-Updatesocket', {
-        category: 'alpaca',
-        color: '#EEEEEE',
-        defaults: {
-            name: { value: "" },
-            auth: { value: "", type: "alpaca-config" }//,
-            //topic: { value: "", required: true }
+            socket: { value: "", type: "alpaca-websocket" },
+            subscribeFor: { value: "", required: true },
+            symbol: { value: "", required: true }
         },
         inputs: 0,
         outputs: 1,
@@ -94,12 +76,13 @@
     <div class="form-row">
         <label for="node-input-topic"><i class="fa fa-function"></i> Function</label>
         <select id="node-input-topic" placeholder="Function">
-            <option value=	"msgTopic"	>	Use msg.Topic	</option>
+            <option value=	"msgTopic">	Use msg.Topic	</option>
             <option value = "getAccount"> Get Account </option>
             <option value = "getAccountConfigurations"> Get Account Configurations </option>
             <option value = "updateAccountConfigurations"> Update Account Configurations </option>
             <option value = "getAccountActivities"> Get Account Activities </option>
             <option value = "getPortfolioHistory"> Get Portfolio History </option>
+            <option value = "getBarsV2"> Get Bars (V2) </option>
             <option value = "createOrder"> Create Order </option>
             <option value = "getOrders"> Get Orders </option>
             <option value = "getOrder"> Get Order </option>
@@ -111,6 +94,8 @@
             <option value = "getPositions"> Get Positions </option>
             <option value = "closePosition"> Close Position </option>
             <option value = "closeAllPositions"> Close All Positions </option>
+            <option value = "lastTrade"> Last Trade </option>
+            <option value = "lastQuote"> Last Quote </option>
             <option value = "getAssets"> Get Assets </option>
             <option value = "getAsset"> Get Asset </option>
             <option value = "getCalendar"> Get Calendar </option>
@@ -125,7 +110,7 @@
         <br />
     </div>
 
-<div class="form-row alpaca-help" style="display:none;" data-topic="msgTopic"><!--------<alpaca-help>-------->
+<div class="form-row alpaca-help" style="display:none;" data-topic="msgTopic">
 <pre class="highlight language-javascript"><span class="f">msg.topic = </span><button class="copy-button" type="button">Copy</button><span>
 [
     "getAccount",
@@ -133,6 +118,7 @@
     "updateAccountConfigurations",
     "getAccountActivities",
     "getPortfolioHistory",
+    "getBarsV2",
     "createOrder",
     "getOrders",
     "getOrder",
@@ -144,6 +130,8 @@
     "getPositions",
     "closePosition",
     "closeAllPositions",
+    "lastTrade",
+    "lastQuote",
     "getAssets",
     "getAsset",
     "getCalendar",
@@ -155,18 +143,18 @@
     "deleteWatchlist",
     "deleteFromWatchlist"
 ]</span></pre>
-</div><!--------</alpaca-help>-------->
-    <div class="form-row alpaca-help" style="display:none;" data-topic="getAccount"><!--------<alpaca-help>-------->
+</div>
+    <div class="form-row alpaca-help" style="display:none;" data-topic="getAccount">
 <pre class="highlight language-javascript"><span class="f">{{topic}} </span>()
     => Promise&lt;Account&gt;;
 <small>     ...this function takes no arguments</small></pre>
-</div><!--------</alpaca-help>-------->
-    <div class="form-row alpaca-help" style="display:none;" data-topic="getAccountConfigurations"><!--------<alpaca-help>-------->
+</div>
+    <div class="form-row alpaca-help" style="display:none;" data-topic="getAccountConfigurations">
 <pre class="highlight language-javascript"><span class="f">{{topic}} </span>()
     => Promise&lt;AccountConfiguration&gt;;
 <small>     ...this function takes no arguments</small></pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="updateAccountConfigurations"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="updateAccountConfigurations">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
     "dtbp_check":"entry",
@@ -176,8 +164,8 @@
     "trade_confirm_email":"none"
 }</span>
     ) => Promise&lt;AccountConfiguration&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getAccountActivities"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getAccountActivities">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
     activityTypes: string | string[], // Any valid activity type
@@ -189,8 +177,8 @@
     pageToken: string
 }</span>
     ) => Promise&lt;AccountActivity[]&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getPortfolioHistory"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getPortfolioHistory">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
     date_start: Date,
@@ -200,8 +188,19 @@
     extended_hours: Boolean
 }</span>
     ) => Promise&lt;PortfolioHistory&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="createOrder"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getBarsV2">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (<button class="copy-button" type="button">Copy</button><span>
+msg.symbol = "AAPL";
+msg.payload = {
+    limit: number,
+    start: date isoformat string yyyy-mm-ddThh:MM:ss-04:00,
+    end: date isoformat string yyyy-mm-ddThh:MM:ss-04:00,
+    timeframe: "1Min" | "1Hour" | "1Day"
+}</span>
+    ) => Promise&lt;BarsObject&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="createOrder">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
     symbol: string, // any valid ticker symbol
@@ -220,8 +219,8 @@
     trail_percent: string // optional,
 }</span>
     ) => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getOrders"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getOrders">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
     status: 'open' | 'closed' | 'all',
@@ -231,108 +230,133 @@
     direction: 'asc' | 'desc'
 }</span>
     ) => Promise&lt;Order[]&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getOrder"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getOrder">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = uuid)
     => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getOrderByClientOrderId"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getOrderByClientOrderId">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = string)
     => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="replaceOrder"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="replaceOrder">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = uuid)
     => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="cancelOrder"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="cancelOrder">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = uuid)
     => Promise</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="cancelAllOrders"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
-    => Promise
-<small>     ...this function takes no arguments</small></pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getPosition"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
-    => Promise&lt;Position&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getPositions"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
-    => Promise&lt;Position&gt;</pre>
-<small>     ...this function takes no arguments</small></pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="closePosition"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
-    => Promise</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="closeAllPositions"><!--------<alpaca-help>-------->
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="cancelAllOrders">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
     => Promise</pre>
-<small>     ...this function takes no arguments</small></pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getAssets"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+<small>     this function takes no arguments</small>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getPosition">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
+    => Promise&lt;Position&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getPositions">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
+    => Promise&lt;Position&gt;</pre>
+<small>     this function takes no arguments</small>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="closePosition">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
+    => Promise</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="closeAllPositions">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
+    => Promise</pre>
+<small>     this function takes no arguments</small>
+</div>
+<!--------<alpaca-help>----                     LAST TRADE: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="lastTrade">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = "SYMBOL" // simple string
+    ) => Promise&lt;LastTradeObject&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     LAST QUOTE: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="lastQuote">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <span>
+    "SYMBOL" // simple string
+</span>
+    ) => Promise&lt;LastQuoteObject&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     GET ASSETS: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getAssets">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <span>
 {
     status: 'active' | 'inactive',
     asset_class: string
 }</span>
     ) => Promise&lt;Asset[]&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getAsset"><!--------<alpaca-help>-------->
+</div>
+<!--------<alpaca-help>----                     GET ASSET: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getAsset">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
     => Promise&lt;Asset&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getCalendar"><!--------<alpaca-help>-------->
+</div>
+<!--------<alpaca-help>----                     GET CALENDAR: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getCalendar">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
     start: Date,
     end: Date
 }</span>
     ) => Promise&lt;Calendar[]&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getWatchlists"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
-!!!WIP!!!
+</div>
+<!--------<alpaca-help>----                     GET WATCHLISTS: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getWatchlists">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
 </span>
-    ) => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="getWatchlist"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
-!!!WIP!!!
+     => Promise&lt;response&gt;</pre>
+<small>     this function takes no arguments</small>
+</div>
+<!--------<alpaca-help>----                     GET WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (<button class="copy-button" type="button">Copy</button><span>
+    msg.payload = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"</span>
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     ADD WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="addWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload.name = "myWatchList",
+    msg.payload.tickers = ["SYMBOL1","SYMBOL2"] //OPTIONAL
 </span>
-    ) => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="addWatchlist"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
-!!!WIP!!!
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     ADD TO WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="addToWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload.id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    msg.payload.ticker = "SYMBOL" 
 </span>
-    ) => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="addToWatchlist"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
-!!!WIP!!!
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     UPDATE WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="updateWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload.name = "myWatchList",
+    msg.payload.tickers = ["SYMBOL1", "SYMBOL2"] 
 </span>
-    ) => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="updateWatchlist"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
-!!!WIP!!!
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     DELETE WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="deleteWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 </span>
-    ) => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="deleteWatchlist"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
-!!!WIP!!!
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     DELETE FROM WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="deleteFromWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload.name = "myWatchList",
+    msg.payload.ticker = "SYMBOL" 
 </span>
-    ) => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
-<div class="form-row alpaca-help" style="display:none;" data-topic="deleteFromWatchlist"><!--------<alpaca-help>-------->
-<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
-!!!WIP!!!
-</span>
-    ) => Promise&lt;Order&gt;</pre>
-</div><!--------</alpaca-help>-------->
+    ) => Promise&lt;response&gt;</pre>
+</div>
 
 <script type="text/javascript">
 /*global $*/
@@ -398,33 +422,33 @@
 
 <!------------------------------------------------------------------------------------->
 
-<script type="text/x-red" data-template-name="Alpaca-Datasocket">
+<script type="text/x-red" data-template-name="Alpaca-Websocket">
     <div class="form-row">
-        <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
-        <input type="text" id="node-input-auth" placeholder="API Keys">
+        <label for="node-input-socket"><i class="fa fa-socks"></i> WebSocket</label>
+        <input type="text" id="node-input-socket">
     </div>
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <input type="text" id="node-input-name">
     </div>
     <div class="form-row">
-        <label for="node-input-usePolygon"><i class="icon-tag"></i> Use Polygon.io</label>
-        <input type="checkbox" id="node-input-usePolygon" checked>
+        <label for="node-input-subscribeFor"><i class="fa fa-rss"></i> Subscribe For:</label>
+        <select id="node-input-subscribeFor">
+            <option value=	"quotes">	Quotes </option>
+            <option value = "trades" selected> Trades </option>
+            <option value = "bars"> Bars </option>
+        </select>
     </div>
     <div class="form-row">
-        <label for="node-input-subkeys"><i class="icon-tag"></i> Subscription Key</label>
-        <input type="text" id="node-input-subkeys" placeholder="">
-        <!--p>Supply a comma separated value which will be split and supplied to the function from the api</p>
-        <p>const keys = USE_POLYGON ? "T.FB,Q.AAPL,A.FB,AM.AAPL" : <br>
-                "alpacadatav1/T.FB,alpacadatav1/Q.AAPL,alpacadatav1/AM.AAPL,alpacadatav1/AM.FB"
-                </p-->
+        <label for="node-input-symbol"><i class="fa fa-ticket"></i> Symbol</label>
+        <input type="text" id="node-input-symbol" placeholder="">
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="Alpaca-Datasocket">
-    <p>Node for emitting events from the Alpaca Data Client</p>
-    <h3>Config</h3>
-    <dl class="message-properties">
+<script type="text/x-red" data-help-name="Alpaca-Websocket">
+    <p>Node for emitting events from the Alpaca Websocket V2 Client</p>
+    <h3>TODO ------ Config</h3>
+    <!--dl class="message-properties">
         <dt>subscribe keys
            <span class="property-type">string</span>
        </dt>
@@ -433,9 +457,9 @@
         <dt>topic
            <span class="property-type">string</span>
        </dt>
-    </dl>
-    <h3>Outputs</h3>
-    <dl class="message-properties">
+    </dl-->
+    <h3>TODO ------ Outputs</h3>
+    <!--dl class="message-properties">
         <dt>payload
            <span class="property-type">object</span>
        </dt>
@@ -452,44 +476,8 @@
         <dt>topic
            <span class="property-type">string</span>
        </dt>
-    </dl>
+    </dl-->
         <h3>Reference</h3>
-        <p><a href="https://github.com/alpacahq/alpaca-trade-api-js/blob/master/examples/websocket_listener.js">SDK Example from GitHub</a></p>
-</script>
-
-<script type="text/x-red" data-template-name="Alpaca-Updatesocket">
-    <div class="form-row">
-        <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
-        <input type="text" id="node-input-auth" placeholder="API Keys">
-    </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-    <!--div class="form-row">
-        <label for="node-input-topic"><i class="icon-tag"></i> Topic</label>
-        <input type="text" id="node-input-topic" placeholder="Name">
-    </div-->
-    <p>Subscribes to 'trade_updates' and 'account updates' only.</p>
-</script>
-
-<script type="text/x-red" data-help-name="Alpaca-Updatesocket">
-    <p>Node for emitting events from the alpaca data socket on 'trade_updates' and 'account updates'</p>
-    <h3>Outputs</h3>
-    <dl class="message-properties">
-        <dt>payload
-           <span class="property-type">object</span>
-       </dt>
-        <h3>Details</h3>
-        <p>Payload is the response object from the API</p>
-        <dt>topic
-           <span class="property-type">string</span>
-       </dt>
-        <h3>Details</h3>
-        <p>Topic is the type of event being emitted from the node<br>
-		Possible values are:<br>
-        "onStateChange",<br>
-		"onOrderUpdate",<br>
-		"onAccountUpdate"</p>
-        
+        <p><a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/alpaca-data-api-v2/">Documentation on Alpaca.Markets</a></p>
+        <p><a href="https://github.com/alpacahq/alpaca-trade-api-js/blob/master/examples/websocket_example.js">SDK Example from GitHub</a></p>
 </script>

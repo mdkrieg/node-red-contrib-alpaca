@@ -9,6 +9,15 @@
         },
         label: function(){return this.name;}
     });
+    RED.nodes.registerType('alpaca-websocket',{
+        category: 'config',
+        defaults: {
+            name: {value:"My V2 WebSocket",required:true},
+            wsauth: {type:"alpaca-config",required:true},
+            feed: {value:"iex",required:true}
+        },
+        label: function(){return this.name;}
+    });
 </script>
 
 <script type="text/x-red" data-template-name="alpaca-config">
@@ -32,5 +41,24 @@
             <option value="true">Paper</option>
             <option value="false">Live</option>
         </select>
+    </div>
+</script>
+
+<script type="text/x-red" data-template-name="alpaca-websocket">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-bookmark"></i> WebSocket Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-wsauth"><i class="fa fa-key"></i> Alpaca Config</label>
+        <input type="text" id="node-config-input-wsauth">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-feed"><i class="fa fa-cloud-download"></i> Feed</label>
+        <input type="text" id="node-config-input-feed">
+        <br><small> Free accounts must use <code>iex</code>.
+        <br> Unlimited accounts can use <code>cta</code>, <code>utp</code>, <code>sip</code>.
+        <br> (The <a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/alpaca-data-api-v2/#subscription-plans"><u>docs</u></a>
+        aren't very clear here with unlimited feed options, msg me on GitHub if the above is incorrect)</small>
     </div>
 </script>
