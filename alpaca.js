@@ -119,79 +119,188 @@ module.exports = function(RED) {
 	    RED.nodes.createNode(this,config);
         var node = this;
         var socket = RED.nodes.getNode(config.socket);
-        var auth = RED.nodes.getNode(config.socket.wsauth);
-    	var subFor = RED.nodes.getNode(config.subscribeFor);
-    	var symbol = [RED.nodes.getNode(config.symbol)];// TODO: improve
+        var data_client = socket.data_client;
+    	var subFor = config.subscribeFor;
+    	var symbol = config.symbol;
+    	var debug = socket.debug;
+    	const validDataTopics = [
+    	    "trades",
+    	    "quotes",
+    	    "bars"
+    	];
     	
-        var alpaca_conn = new Alpaca({
-          keyId: auth.API_KEY || ENV_API_KEY, 
-          secretKey: auth.API_SECRET || ENV_API_SECRET,
-          feed: socket.feed || "iex"
-        });
-        
         var cx_status={
             fill:"grey",
-            shape:"dot"
+            shape:"dot",
         };
     	node.status(cx_status);
-    		
-        const data_client = alpaca_conn.data_stream_v2;
+        
+        var updateContext = function(){
+            if(debug){
+                node.context().global.set("alpaca_websocket_session",data_client.session);
+            }
+        };
+        
+        var subscribe = function(){
+            let msg = {
+                "symbol": symbol
+            };
+            let functionCalls = {
+                "trades":"subscribeForTrades",
+                "quotes":"subscribeForQuotes",
+                "bars":  "subscribeForBars",
+            };
+            let functionPayloads = {
+                "trades":"Subscribed For Trades",
+                "quotes":"Subscribed For Quotes",
+                "bars":  "Subscribed For Bars",
+            };
+            let fnCall = functionCalls[subFor];
+            let payload = functionPayloads[subFor];
+    	    msg.topic = fnCall;
+    	    msg.payload = symbol + " - " + payload;
+    	    // do the work:
+    	    if(!fnCall) return;
+    	    data_client[fnCall]([symbol]);
+            if(config.onSubscribeMsg) {
+                node.send(msg);
+            }
+            updateContext();
+            //update status
+    	    cx_status.fill = "green";
+            cx_status.text = subFor + ": " + symbol;
+    	    node.status(cx_status);
+        };
+        
+        var unsubscribe = function(){
+            let msg = {
+                "symbol": symbol
+            };
+            let functionCalls = {
+                "trades":"unsubscribeFromTrades",
+                "quotes":"unsubscribeFromQuotes",
+                "bars":  "unsubscribeFromBars",
+            };
+            let functionPayloads = {
+                "trades":"Unsubscribed From Trades",
+                "quotes":"Unsubscribed From Quotes",
+                "bars":  "Unsubscribed From Bars",
+            };
+            let fnCall = functionCalls[subFor];
+            let payload = functionPayloads[subFor];
+    	    msg.topic = fnCall;
+    	    msg.payload = symbol + " - " + payload;
+    	    // do the work:
+    	    if(!fnCall) return;
+    	    data_client[fnCall]([symbol]);
+            if(config.onSubscribeMsg) {
+                node.send(msg);
+            }
+            updateContext();
+    	    cx_status.fill = "grey";
+            cx_status.text = "";
+    	    node.status(cx_status);
+        };
+        
+        // not fond of the below statement, but onConnect isn't
+        // getting called when nodes re-deploy without restart
+        if(data_client.session.currentState != 'connecting'){
+            subscribe();
+        }
         
         data_client.onConnect(function () {
+            subscribe();
             var msg = {
                 'topic':'onConnect',
-                'payload':'Connected'};
+                'payload':'Connected',
+                'data_client':data_client,
+                'config':config
+            };
             cx_status.fill = "green";
+            cx_status.text = subFor + ": " + symbol;
             node.status(cx_status);
-            
-    	    data_client.subscribeForTrades([symbol]);
-    	    node.send({
-                "topic":"subscribeForTrades",
-                "payload": symbol + " - subscribed for trades",
-                "symbol": symbol
-            });
+            if(config.onConnectMsg){
+                node.send(msg);
+            }
+            updateContext();
         });
+        
         data_client.onError((err) => {
             node.error(err, {});
+            node.send({
+                "data_client":data_client,
+                "payload":err
+            });
+            cx_status.fill = "red";
+            node.status(cx_status);
         });
+        
         data_client.onStockTrade((trade) => {
             let msg = {};
             msg.topic = "onStockTrade";
             msg.payload = trade;
-            node.send(msg);
+            if(trade.Symbol == symbol){
+                node.send(msg);
+            }
         });
+        
         data_client.onStockQuote((quote) => {
             let msg = {};
             msg.topic = "onStockQuote";
             msg.payload = quote;
-            node.send(msg);
+            if(quote.Symbol == symbol){
+                node.send(msg);
+            }
         });
+        
         data_client.onStockBar((bar) => {
             let msg = {};
             msg.topic = "onStockBar";
             msg.payload = bar;
-            node.send(msg);
+            if(bar.Symbol == symbol){
+                node.send(msg);
+            }
         });
+        
         data_client.onStateChange((state) => {
             let msg = {};
             msg.topic = "onStateChange";
             msg.payload = state;
-            node.send(msg);
+            if(config.onStateMsg) {
+                node.send(msg);
+            }
+            updateContext();
         });
         
         data_client.onDisconnect(() => {
             var msg = {
                 'topic':'onDisconnect',
                 'payload':'Disconnected'};
-            node.send(msg);
+            if(config.onDisconnectMsg) {
+                node.send(msg);
+            }
 		    cx_status.fill = "grey";
 	        node.status(cx_status);
+	        updateContext();
         });
-
-        data_client.connect();
+        
+        node.on("close",unsubscribe);
+        node.on("input", function(msg){
+            let new_symbol = msg.payload;
+            let new_subFor = msg.topic;
+            unsubscribe();
+            if (validDataTopics.includes(new_subFor)){
+                subFor = new_subFor;
+            }else if(new_subFor != "" && !!new_subFor){
+                node.error("Invalid Topic: '" + new_subFor
+                    + "'   Use: " + validDataTopics.join(", "));
+            }
+            symbol=new_symbol;
+            subscribe();
+        });
     }
-		
 
     RED.nodes.registerType("Alpaca",universalAlpacaNode);
-    RED.nodes.registerType("Alpaca-DataV2",socketAlpacaDataV2);
+    RED.nodes.registerType("Alpaca-Websocket",socketAlpacaDataV2);
+    //RED.nodes.registerType("Alpaca-Editsocket",socketAlpacaWSEdit);
 };

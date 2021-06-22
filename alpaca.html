@@ -25,14 +25,20 @@
         defaults: {
             name: { value: "" },
             socket: { value: "", type: "alpaca-websocket" },
-            subscribeFor: { value: "", required: true },
-            symbol: { value: "", required: true }
+            subscribeFor: { value: "trades", required: true },
+            symbol: { value: "", required: true },
+            inputs: { value: 0 },
+            enbInputConfig: { value: false},
+            onSubscribeMsg: { value: false},
+            onConnectMsg: { value: false},
+            onStatusMsg: { value: false},
+            onDisconnectMsg: { value: false}
         },
         inputs: 0,
         outputs: 1,
         icon: "alpaca.svg",
         label: function() {
-            return this.name; // || this.topic;
+            this.name; // || this.topic;
         }
     });
     
@@ -357,49 +363,49 @@ msg.payload = {
 </span>
     ) => Promise&lt;response&gt;</pre>
 </div>
-
-<script type="text/javascript">
-/*global $*/
-    $(document).ready(function(){
-        $(".copy-button").on("click", function(evt) {
-            evt.preventDefault();
-            var ta = document.createElement('textarea');
-            ta.value = $(this).next()[0].innerText;
-            ta.style.position = 'absolute';
-            ta.style.left = '-3000px';
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            $(this).text("Copied!");
-            var self = $(this);
-            setTimeout(function() {
-                self.text("Copy");
-            },3000);
-        });
-        $("#dialog-form .form-row .highlight span.f").each(function(){
-            $(this).text(function(){
-                return $(this).text().replace(
-                    "{{topic}}",
-                    $(this).parent().parent().data("topic")
-                );
+    
+    <script type="text/javascript">
+    /*global $*/
+        $(document).ready(function(){
+            $(".copy-button").on("click", function(evt) {
+                evt.preventDefault();
+                var ta = document.createElement('textarea');
+                ta.value = $(this).next()[0].innerText;
+                ta.style.position = 'absolute';
+                ta.style.left = '-3000px';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                $(this).text("Copied!");
+                var self = $(this);
+                setTimeout(function() {
+                    self.text("Copy");
+                },3000);
             });
-        });
-        var showHelp = function(){
-            var newTopic = $("#node-input-topic").val();
-            $("#dialog-form .form-row.alpaca-help").each(function(){
-                var $row = $(this);
-                if($row.data("topic") == newTopic){
-                    $row.show();
-                }else{
-                    $row.hide();
-                }
+            $("#dialog-form .form-row .highlight span.f").each(function(){
+                $(this).text(function(){
+                    return $(this).text().replace(
+                        "{{topic}}",
+                        $(this).parent().parent().data("topic")
+                    );
+                });
             });
-        };
-        $("#node-input-topic").on("change", showHelp);
-        $("#node-input-topic").ready(showHelp);
-    });
-</script>
+            var showHelp = function(){
+                var newTopic = $("#node-input-topic").val();
+                $("#dialog-form .form-row.alpaca-help").each(function(){
+                    var $row = $(this);
+                    if($row.data("topic") == newTopic){
+                        $row.show();
+                    }else{
+                        $row.hide();
+                    }
+                });
+            };
+            $("#node-input-topic").on("change", showHelp);
+            $("#node-input-topic").ready(showHelp);
+        });
+    </script>
 </script>
 
 <script type="text/x-red" data-help-name="Alpaca">
@@ -421,18 +427,35 @@ msg.payload = {
 </script>
 
 <!------------------------------------------------------------------------------------->
+<!--------------------------- BEGIN WEBSOCKET ----------------------------------------->
+<!------------------------------------------------------------------------------------->
+
+<style type="text/css">
+    .checkbox-row label{
+        width:250px !important;
+    }
+    .checkbox-row input{
+        width:30px !important;
+    }
+    .node-help{
+        padding: 5px 15px;
+        border: 1px dashed #BBB;
+        font-size: 0.9em;
+        margin-bottom: 15px;
+    }
+</style>
 
 <script type="text/x-red" data-template-name="Alpaca-Websocket">
     <div class="form-row">
-        <label for="node-input-socket"><i class="fa fa-socks"></i> WebSocket</label>
+        <label for="node-input-socket"><i class="fa fa-cloud-download"></i> WebSocket</label>
         <input type="text" id="node-input-socket">
     </div>
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <label for="node-input-name"><i class="fa fa-id-card"></i> Name</label>
         <input type="text" id="node-input-name">
     </div>
     <div class="form-row">
-        <label for="node-input-subscribeFor"><i class="fa fa-rss"></i> Subscribe For:</label>
+        <label for="node-input-subscribeFor" style="width:150px;"><i class="fa fa-rss"></i> Subscribe For:</label>
         <select id="node-input-subscribeFor">
             <option value=	"quotes">	Quotes </option>
             <option value = "trades" selected> Trades </option>
@@ -441,43 +464,133 @@ msg.payload = {
     </div>
     <div class="form-row">
         <label for="node-input-symbol"><i class="fa fa-ticket"></i> Symbol</label>
-        <input type="text" id="node-input-symbol" placeholder="">
+        <input type="text" id="node-input-symbol">
     </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-enbInputConfig"><i class="fa fa-cogs"></i> Programmatic Config</label>
+        <input type="checkbox" id="node-input-enbInputConfig"><br>
+        <p class="node-help" style="display:none;">
+            <code>msg.payload</code> replaces Symbol<br>
+            <code>msg.topic</code> replaces Subscription ("trades", "quotes", "bars")
+        </p>
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-onSubscribeMsg"><i class="fa fa-bug"></i> Send Msg onSubscribe</label>
+        <input type="checkbox" id="node-input-onSubscribeMsg">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-onConnectMsg"><i class="fa fa-bug"></i> Send Msg onConnect</label>
+        <input type="checkbox" id="node-input-onConnectMsg">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-onStatusMsg"><i class="fa fa-bug"></i> Send Msg onStatusChange</label>
+        <input type="checkbox" id="node-input-onStatusMsg">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-onDisconnectMsg"><i class="fa fa-bug"></i> Send Msg onDisconnect</label>
+        <input type="checkbox" id="node-input-onDisconnectMsg">
+    </div>
+    <input id="node-input-inputs" type="hidden" value="0">
+    <script type="text/javascript">
+    /*global $*/
+        function showSocketHelp(speed, $this = $("#node-input-enbInputConfig")){
+            var checked = $this.is(":checked");
+            var $helper = $this.parents(".form-row").find(".node-help");
+            if (checked){
+                $helper.show(speed);
+            }else{
+                $helper.hide(speed);
+            }
+        }
+        $(document).ready(function(){
+            $("#node-input-enbInputConfig").on("change",function(){
+                var $this = $(this);
+                var checked = $this.is(":checked");
+                var inputs = checked ? 1:0;
+                showSocketHelp(300, $this);
+                $this.parents("#dialog-form")
+                    .find("#node-input-inputs")
+                    .val(inputs);
+                console.log("inputs changed to " + inputs);
+            });
+            showSocketHelp(0);
+        });
+    </script>
 </script>
 
 <script type="text/x-red" data-help-name="Alpaca-Websocket">
-    <p>Node for emitting events from the Alpaca Websocket V2 Client</p>
-    <h3>TODO ------ Config</h3>
-    <!--dl class="message-properties">
-        <dt>subscribe keys
+    <p>Node for connecting to the Alpaca Data V2 Websocket Client.</p>
+    <h3>Config</h3>
+    <dl class="message-properties">
+        <dt>WebSocket
+           <span class="property-type">node</span>
+        </dt>
+        <p>Connection channel that multiplexes to the user nodes.</p>
+        <dt>Name
            <span class="property-type">string</span>
-       </dt>
-        <h3>Details</h3>
-        <p>Supply a comma separated value which will be split and supplied to the function from the api</p>
-        <dt>topic
+        </dt>
+        <p>Arbitrary name to display in the editor.</p>
+        <dt>Subscribe For
+           <span class="property-type">selection</span>
+        </dt>
+        <p>Type of data to listen for (Trades, Quotes, Bars).</p>
+        <dt>Symbol
            <span class="property-type">string</span>
-       </dt>
+        </dt>
+        <p>Stock symbol to listen for.</p>
+        <dt>Programmatic Config
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Enables an input connection to be able to dynamically
+        change the subscription of the node.</p>
+        <dt>Send Msg onSubscribe
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Sends a message when the subscription changes
+        (on both subscribe and unsubscribe).</p>
+        <dt>Send Msg onConnect
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Sends a message when the socket connects.</p>
+        <dt>Send Msg onStatusChange
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Sends a message when the socket status changes.</p>
+        <dt>Send Msg onDisconnect
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Sends a message when the socket disconnects.</p>
     </dl-->
-    <h3>TODO ------ Outputs</h3>
-    <!--dl class="message-properties">
+    <h3>Outputs</h3>
+    <dl class="message-properties">
         <dt>payload
            <span class="property-type">object</span>
        </dt>
-        <h3>Details</h3>
-        <p>Payload is the response object from the API</p>
+        <p>Payload is the response object from the API, see the 
+        <a href="https://github.com/mdkrieg/node-red-contrib-alpaca#alpaca-websocket">README on GitHub</a></p>
         <dt>topic
            <span class="property-type">string</span>
        </dt>
-       <dt>topic
-           <span class="property-type">object</span>
-       </dt>
-        <h3>Details</h3>
-        <p>Payload is the response object from the API</p>
-        <dt>topic
-           <span class="property-type">string</span>
-       </dt>
+       <p>Topic represents the triggered function, possibilities are:
+       <ul>
+        <li>onStockTrade</li>
+        <li>onStockQuote</li>
+        <li>onStockBar</li>
+        <li>onConnect</li>
+        <li>onDisconnect</li>
+        <li>onStateChange</li>
+        <li>subscribeForTrades</li>
+        <li>subscribeForQuotes</li>
+        <li>subscribeForBars</li>
+        <li>unsubscribeFromTrades</li>
+        <li>unsubscribeFromQuotes</li>
+        <li>unsubscribeFromBars</li>
+       </ul>
+       </p>
+       
     </dl-->
-        <h3>Reference</h3>
-        <p><a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/alpaca-data-api-v2/">Documentation on Alpaca.Markets</a></p>
-        <p><a href="https://github.com/alpacahq/alpaca-trade-api-js/blob/master/examples/websocket_example.js">SDK Example from GitHub</a></p>
+        <h3>References</h3>
+        <p><a href="https://github.com/mdkrieg/node-red-contrib-alpaca#alpaca-websocket">README on GitHub</a></p>
+        <p><a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/alpaca-data-api-v2/">Alpaca Documentation</a></p>
+        <p><a href="https://github.com/alpacahq/alpaca-trade-api-js/blob/master/examples/websocket_example_datav2.js">SDK Example from GitHub</a></p>
 </script>

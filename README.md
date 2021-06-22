@@ -1,8 +1,9 @@
 Alpaca API: https://alpaca.markets/
-
-GitHub: https://github.com/mdkrieg/node-red-contrib-alpaca
-
-Wrapped Project: https://github.com/alpacahq/alpaca-trade-api-js
+Official SDK: https://github.com/alpacahq/alpaca-trade-api-js
+Project Links
+    GitHub: https://github.com/mdkrieg/node-red-contrib-alpaca
+    NPM: https://www.npmjs.com/package/node-red-contrib-alpaca
+    NodeRed Project: https://flows.nodered.org/node/node-red-contrib-alpaca
 
 # Alpaca Trading with Node-RED
 This project wraps the official Node.js library for Alpaca into useful nodes for Node-RED.
@@ -10,16 +11,23 @@ This project wraps the official Node.js library for Alpaca into useful nodes for
 Node-RED is a visual programming tool based on NodeJS.
 Alpaca is a stock trading API.
 
+# Nodes
+## Alpaca
+TODO
+## Alpaca Websocket
+TODO
+
 # Release Notes
 ### 2.0.0
 #### Major Changes
-* Removing "simple" nodes and publishing to separate project
-* Removing socket nodes as I don't think they work (replacing with one that does work)
+* Removed "simple" nodes and publishing to separate project
+* Removed old socket nodes as I don't think they work (replacing with one that does work)
 
 #### Minor Changes
-* Adding websocket v2 node
-* Adding Get Trade and Get Quote (aka "Get Last Trade/Quote") functions to main Alpaca node
-* Updating help for Watchlist functions
+* Added websocket v2 node
+* Added Get Trade and Get Quote (aka "Get Last Trade/Quote") functions to main Alpaca node
+* Added GetBarsV2 function to main Alpaca node
+* Updated help for Watchlist functions
 
 ### 1.1.1
 * Merged previous two updates and publish to NPM
@@ -74,14 +82,8 @@ Project can be installed by searching "alpaca" in the Manage Palette section of 
 Or to install using npm from your Node-RED home directory (~/.node-red)
 
 ```
-npm install node-red-contrib-alpaca
+npm install --save node-red-contrib-alpaca
 ```
-
-**Manual install from GitHub:**
-1. Clone this repository to your Node-RED profile folder
-   * Usually /home/[user]/.node-red/node_modules
-1. Move to the repository's root and run "npm install" to grab dependencies
-
 
 **To define your API keys as environment variables:**
    * APCA_API_KEY_ID=[your API key]
@@ -89,12 +91,7 @@ npm install node-red-contrib-alpaca
 
 # Dependencies
 Requires Alpaca's Official NodeJS SDK, https://github.com/alpacahq/alpaca-trade-api-js
-
-Will install automatically if using npm or nodered directly, or to install SDK by itself:
-
-```
-npm install @alpacahq/alpaca-trade-api
-```
+Also see official Alpaca API documentation, https://alpaca.markets/docs/api-documentation/
 
 # To Do
 - [x] (0.1.2) Publish to NPM
@@ -103,4 +100,4 @@ npm install @alpacahq/alpaca-trade-api
 - [x] (0.2.0) Allow API Keys to be defined in configuration node
 - [ ] Provide more examples
 - [ ] Enhance template and help features
-- [ ] Confirm "Cash Trading" works (I've only used paper trading w/ Alpaca)
+- [x] Confirm "Cash Trading" works (I've only used paper trading w/ Alpaca)

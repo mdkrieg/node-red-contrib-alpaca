@@ -14,7 +14,8 @@
         defaults: {
             name: {value:"My V2 WebSocket",required:true},
             wsauth: {type:"alpaca-config",required:true},
-            feed: {value:"iex",required:true}
+            feed: {value:"iex",required:true},
+            debug: { value: true}
         },
         label: function(){return this.name;}
     });
@@ -60,5 +61,9 @@
         <br> Unlimited accounts can use <code>cta</code>, <code>utp</code>, <code>sip</code>.
         <br> (The <a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/alpaca-data-api-v2/#subscription-plans"><u>docs</u></a>
         aren't very clear here with unlimited feed options, msg me on GitHub if the above is incorrect)</small>
+    </div>
+    <div class="form-row">
+        <label for="node-input-debug"><i class="fa fa-bug"></i> Copy Websocket to Context</label>
+        <input type="checkbox" id="node-input-debug">
     </div>
 </script>
