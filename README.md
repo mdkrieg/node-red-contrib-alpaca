@@ -103,6 +103,9 @@ By default the listener nodes connect to the symbol and subscription defined in 
 ```
 
 # Release Notes
+### 2.1.0
+* Moving config node to separate npm package to avoid clashes with sibling project: "alpaca-simple" nodes
+
 ### 2.0.1 - ..3
 * Fixed issue with Websocket label not accepting configured name
 * Merging dropped changes in README
