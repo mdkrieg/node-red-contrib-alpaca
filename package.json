@@ -4,7 +4,8 @@
     "email": "mdkrieg@mtu.edu"
   },
   "dependencies": {
-    "@alpacahq/alpaca-trade-api": "^2.3.0"
+    "@alpacahq/alpaca-trade-api": "^2.3.0",
+    "node-red-contrib-alpaca-auth": "^1.0.2"
   },
   "description": "Nodes for connecting to the Alpaca stock trading API.",
   "keywords": [
@@ -25,5 +26,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "2.0.3"
+  "version": "2.1.0"
 }

@@ -1,9 +1,9 @@
-
+/*
 const ENV_API_KEY = process.env.APCA_API_KEY_ID;
 const ENV_API_SECRET = process.env.APCA_API_SECRET_KEY;
 const ENV_API_KEY_PAPER = process.env.APCA_API_KEY_ID_PAPER;
 const ENV_API_SECRET_PAPER = process.env.APCA_API_SECRET_KEY_PAPER;
-
+*/
 module.exports = function(RED) {
     
     var Alpaca = require('@alpacahq/alpaca-trade-api');
@@ -18,15 +18,15 @@ module.exports = function(RED) {
         };
         if(auth.PAPER === "true"){
             cx = new Alpaca({
-                keyId: auth.API_KEY || ENV_API_KEY_PAPER, 
-                secretKey: auth.API_SECRET || ENV_API_SECRET_PAPER,
+                keyId: auth.API_KEY, 
+                secretKey: auth.API_SECRET,
                 paper: true
             });
             cx_status.shape = "ring";
         }else{
             cx = new Alpaca({
-                keyId: auth.API_KEY || ENV_API_KEY, 
-                secretKey: auth.API_SECRET || ENV_API_SECRET,
+                keyId: auth.API_KEY, 
+                secretKey: auth.API_SECRET,
                 paper: false
             });
             cx_status.shape = "dot";
@@ -135,9 +135,9 @@ module.exports = function(RED) {
         };
     	node.status(cx_status);
         
-        var updateContext = function(){
+        var updateContext = function(){ //TODO: migrate to the same function defined in config node
             if(debug){
-                node.context().global.set("alpaca_websocket_session",data_client.session);
+                node.context().global.set(socket.contextname,data_client.session);
             }
         };
         
