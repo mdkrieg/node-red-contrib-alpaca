@@ -96,7 +96,7 @@ module.exports = function(RED) {
             if(!topic){
                 error({"error":{"message":"Error - Invalid Function","topic":topic}});
             }else if(topic == "getBarsV2"){
-                alpaca_conn[topic](msg.symbol, msg.payload).then(success).catch(error);
+                alpaca_conn[topic](msg.symbol || msg.ticker, msg.payload).then(success).catch(error);
             // BEGIN WATCHLIST CHECKS --- TODO: separate watchlist stuff into separate node
             }else if([  "addWatchlist",
                         "addToWatchlist",
@@ -104,7 +104,7 @@ module.exports = function(RED) {
                         "deleteFromWatchlist"].includes(topic)){
                 // above tests for specific functions that use multiple arguments
                 let name = msg.payload.name || msg.payload.id;
-                let ticker = msg.payload.ticker || msg.payload.tickers;
+                let ticker = msg.payload.ticker || msg.payload.tickers || msg.symbol || msg.symbols;
                 ticker = topic == "addWatchlist" ? ticker || [] : ticker || ""; //catch for optional args
                 alpaca_conn[topic](name, ticker).then(success).catch(error);
             }else{
@@ -302,5 +302,4 @@ module.exports = function(RED) {
 
     RED.nodes.registerType("Alpaca",universalAlpacaNode);
     RED.nodes.registerType("Alpaca-Websocket",socketAlpacaDataV2);
-    //RED.nodes.registerType("Alpaca-Editsocket",socketAlpacaWSEdit);
 };

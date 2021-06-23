@@ -15,7 +15,8 @@
             name: {value:"My V2 WebSocket",required:true},
             wsauth: {type:"alpaca-config",required:true},
             feed: {value:"iex",required:true},
-            debug: { value: true}
+            debug: { value: true},
+            contextname: { value: "alpaca_websocket_session"}
         },
         label: function(){return this.name;}
     });
@@ -45,6 +46,16 @@
     </div>
 </script>
 
+
+
+<style type="text/css">
+    .checkbox-row label{
+        width:250px !important;
+    }
+    .checkbox-row input{
+        width:30px !important;
+    }
+</style>
 <script type="text/x-red" data-template-name="alpaca-websocket">
     <div class="form-row">
         <label for="node-config-input-name"><i class="fa fa-bookmark"></i> WebSocket Name</label>
@@ -62,8 +73,12 @@
         <br> (The <a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/alpaca-data-api-v2/#subscription-plans"><u>docs</u></a>
         aren't very clear here with unlimited feed options, msg me on GitHub if the above is incorrect)</small>
     </div>
-    <div class="form-row">
-        <label for="node-input-debug"><i class="fa fa-bug"></i> Copy Websocket to Context</label>
+    <div class="form-row checkbox-row">
+        <label for="node-input-debug"><i class="fa fa-bug"></i> Copy Websocket to Global Context</label>
         <input type="checkbox" id="node-input-debug">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-contextname"><i class="fa fa-cogs"></i> Context Variable</label>
+        <input type="text" id="node-config-input-contextname">
     </div>
 </script>

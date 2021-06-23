@@ -13,6 +13,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,n);
         this.wsauth = n.wsauth;
         this.feed = n.feed;
+        this.debug = n.debug;
         
         var auth = RED.nodes.getNode(this.wsauth);
         
