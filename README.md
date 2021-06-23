@@ -103,6 +103,10 @@ By default the listener nodes connect to the symbol and subscription defined in 
 ```
 
 # Release Notes
+### 2.0.1 - ..3
+* Fixed issue with Websocket label not accepting configured name (for real this time)
+* Merging dropped changes in README
+
 ### 2.0.0
 #### Major Changes
 * Removed "simple" nodes and publishing to separate project
@@ -113,6 +117,7 @@ By default the listener nodes connect to the symbol and subscription defined in 
 * Added Get Trade and Get Quote (aka "Get Last Trade/Quote") functions to main Alpaca node
 * Added GetBarsV2 function to main Alpaca node
 * Updated help for Watchlist functions
+* Upped the @alpacahq dependecy to v2.3
 
 ### 1.1.1
 * Merged previous two updates and publish to NPM
