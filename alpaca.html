@@ -88,7 +88,7 @@
             <option value = "updateAccountConfigurations"> Update Account Configurations </option>
             <option value = "getAccountActivities"> Get Account Activities </option>
             <option value = "getPortfolioHistory"> Get Portfolio History </option>
-            <option value = "getBarsV2"> Get Bars (V2) </option>
+            <option value = "getBars"> Get Bars </option>
             <option value = "createOrder"> Create Order </option>
             <option value = "getOrders"> Get Orders </option>
             <option value = "getOrder"> Get Order </option>
@@ -124,7 +124,7 @@
     "updateAccountConfigurations",
     "getAccountActivities",
     "getPortfolioHistory",
-    "getBarsV2",
+    "getBars",
     "createOrder",
     "getOrders",
     "getOrder",
@@ -195,14 +195,18 @@
 }</span>
     ) => Promise&lt;PortfolioHistory&gt;</pre>
 </div>
-<div class="form-row alpaca-help" style="display:none;" data-topic="getBarsV2">
+<div class="form-row alpaca-help" style="display:none;" data-topic="getBars">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (<button class="copy-button" type="button">Copy</button><span>
-msg.symbol = "AAPL";
 msg.payload = {
-    limit: number,
-    start: date isoformat string yyyy-mm-ddThh:MM:ss-04:00,
-    end: date isoformat string yyyy-mm-ddThh:MM:ss-04:00,
-    timeframe: "1Min" | "1Hour" | "1Day"
+    symbol: "AAPL", // can be multiple comma separated values
+    timeframe: "minute" | "1Min" | "5Min" | "15Min" | "day" | "1D", //defaults to "day"
+    parameters{
+        limit: number, // between 1 and 1000. Default is 100 if unspecified or 0.
+        start: date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ after
+        end: date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ until
+        after: date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ start
+        until: date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ until
+    }
 }</span>
     ) => Promise&lt;BarsObject&gt;</pre>
 </div>

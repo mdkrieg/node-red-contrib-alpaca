@@ -58,7 +58,7 @@ module.exports = function(RED) {
             "updateAccountConfigurations",
             "getAccountActivities",
             "getPortfolioHistory",
-            "getBarsV2",
+            "getBars",
             "createOrder",
             "getOrders",
             "getOrder",
@@ -95,8 +95,8 @@ module.exports = function(RED) {
             var topic = validTopic(msg.topic,config.topic,validFunctions);
             if(!topic){
                 error({"error":{"message":"Error - Invalid Function","topic":topic}});
-            }else if(topic == "getBarsV2"){
-                alpaca_conn[topic](msg.symbol || msg.ticker, msg.payload).then(success).catch(error);
+            }else if(topic == "getBars"){
+                alpaca_conn[topic](msg.payload.timeframe || "day", msg.payload.symbol).then(success).catch(error);
             // BEGIN WATCHLIST CHECKS --- TODO: separate watchlist stuff into separate node
             }else if([  "addWatchlist",
                         "addToWatchlist",

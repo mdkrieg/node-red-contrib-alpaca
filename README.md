@@ -1,10 +1,17 @@
 ### References
 * Alpaca API Documentation: https://alpaca.markets/docs/api-documentation/
 * Official SDK on GitHub: https://github.com/alpacahq/alpaca-trade-api-js
+
 ### Project Links
 * GitHub: https://github.com/mdkrieg/node-red-contrib-alpaca
 * NPM: https://www.npmjs.com/package/node-red-contrib-alpaca
 * NodeRed Project: https://flows.nodered.org/node/node-red-contrib-alpaca
+
+### Roadmap / TODO
+- [ ] Fix or rollback GetBarsV2
+- [ ] Provide more examples (anyone want to contribute?)
+- [ ] Allow websocket listeners to subscribe to more than one ticker per node
+
 
 # Alpaca Trading with Node-RED
 This project wraps the official Node.js library for Alpaca into useful nodes for Node-RED.
@@ -40,6 +47,7 @@ Official API Docs: https://alpaca.markets/docs/api-documentation/api-v2/market-d
 This node connects to the V2 websocket. The config node creates the connection which multiplexes the data to the individual nodes. Alpaca's free data plan currently limits to one connection which is accomplished by limiting your flow to use one config node.
 
 By default the listener nodes connect to the symbol and subscription defined in the configuration panel. If you check the "Programmatic Config" option then an input connection becomes available. This input will accept a new symbol and/or subscription to update the listener in real time. Symbol will always be replaced by msg.payload but the subscription will only be replaced if it is one of the valid subscriptions: "trades", "quotes", or "bars".
+
 
 *Example Quotes Response:*
 ```
@@ -185,13 +193,3 @@ npm install --save node-red-contrib-alpaca
 # Dependencies
 Requires Alpaca's Official NodeJS SDK, https://github.com/alpacahq/alpaca-trade-api-js
 Also see official Alpaca API documentation, https://alpaca.markets/docs/api-documentation/
-
-# To Do
-- [x] (0.1.2) Publish to NPM
-- [x] (0.1.2) Publish to Node-RED
-- [x] (0.2.0) Integrate ability to make all types of orders (market, stop limit, etc)
-- [x] (0.2.0) Allow API Keys to be defined in configuration node
-- [x] Enhance template and help features
-- [x] Confirm "Cash Trading" works (I've only used paper trading w/ Alpaca)
-- [ ] Provide more examples (anyone want to contribute?)
-- [ ] Allow websocket listeners to subscribe to more than one ticker per node

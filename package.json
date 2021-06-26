@@ -7,6 +7,10 @@
     "@alpacahq/alpaca-trade-api": "^2.3.0",
     "node-red-contrib-alpaca-auth": "^1.0.3"
   },
+  "repository": { 
+    "type": "git", 
+    "url": "git+https://github.com/mdkrieg/node-red-contrib-alpaca" 
+	},
   "description": "Nodes for connecting to the Alpaca stock trading API.",
   "keywords": [
     "node-red",
