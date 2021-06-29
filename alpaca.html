@@ -6,7 +6,11 @@
         defaults: {
             name: { value: "" },
             topic: { value: "msgTopic" },
-            auth: { value: "", type: "alpaca-config" }
+            auth: { value: "", type: "alpaca-config" },
+            barISOString: { value: false },
+            barDateString: { value: false },
+            barTimeString: { value: false },
+            barLocaleString: { value: false }
         },
         inputs: 1,
         outputs: 1,
@@ -174,38 +178,54 @@
 <div class="form-row alpaca-help" style="display:none;" data-topic="getAccountActivities">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
-    activityTypes: string | string[], // Any valid activity type
-    until: Date,
-    after: Date,
-    direction: string,
-    date: Date,
-    pageSize: number,
-    pageToken: string
+    "activityTypes": string | string[], // Any valid activity type
+    "until": Date,
+    "after": Date,
+    "direction": string,
+    "date": Date,
+    "pageSize": number,
+    "pageToken": string
 }</span>
     ) => Promise&lt;AccountActivity[]&gt;</pre>
 </div>
-<div class="form-row alpaca-help" style="display:none;" data-topic="getPortfolioHistory">
+<div class="form-row alpaca-help" style="display":none;" data-topic="getPortfolioHistory">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
-    date_start: Date,
-    date_end: Date,
-    period: '1M' | '3M' | '6M' | '1A' | 'all' | 'intraday',
-    timeframe: '1Min' | '5Min' | '15Min' | '1H' | '1D',
-    extended_hours: Boolean
+    "date_start": Date,
+    "date_end": Date,
+    "period": '1M' | '3M' | '6M' | '1A' | 'all' | 'intraday',
+    "timeframe": '1Min' | '5Min' | '15Min' | '1H' | '1D',
+    "extended_hours": Boolean
 }</span>
     ) => Promise&lt;PortfolioHistory&gt;</pre>
 </div>
 <div class="form-row alpaca-help" style="display:none;" data-topic="getBars">
+    <div class="form-row checkbox-row">
+        <label for="node-input-barISOString"><i class="fa fa-clock"></i> Include ISOString timestamp</label>
+        <input type="checkbox" id="node-input-barISOString">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-barDateString"><i class="fa fa-clock"></i> Include DateString timestamp</label>
+        <input type="checkbox" id="node-input-barDateString">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-barTimeString"><i class="fa fa-clock"></i> Include TimeString timestamp</label>
+        <input type="checkbox" id="node-input-barTimeString">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-barLocaleString"><i class="fa fa-clock"></i> Include LocaleString timestamp</label>
+        <input type="checkbox" id="node-input-barLocaleString">
+    </div>
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (<button class="copy-button" type="button">Copy</button><span>
 msg.payload = {
-    symbol: "AAPL", // can be multiple comma separated values
-    timeframe: "minute" | "1Min" | "5Min" | "15Min" | "day" | "1D", //defaults to "day"
-    parameters{
-        limit: number, // between 1 and 1000. Default is 100 if unspecified or 0.
-        start: date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ after
-        end: date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ until
-        after: date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ start
-        until: date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ until
+    "symbol": "AAPL", // can be multiple comma separated values
+    "timeframe": "minute" | "1Min" | "5Min" | "15Min" | "day" | "1D", //defaults to "day"
+    "parameters": {
+        "limit": number, // between 1 and 1000. Default is 100 if unspecified or 0.
+        "start": date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ after
+        "end": date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ until
+        "after": date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ start
+        "until": date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ until
     }
 }</span>
     ) => Promise&lt;BarsObject&gt;</pre>
@@ -213,31 +233,31 @@ msg.payload = {
 <div class="form-row alpaca-help" style="display:none;" data-topic="createOrder">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
-    symbol: string, // any valid ticker symbol
-    qty: number,
-    side: 'buy' | 'sell',
-    type: 'market' | 'limit' | 'stop' | 'stop_limit' | 'trailing_stop',
-    time_in_force: 'day' | 'gtc' | 'opg' | 'ioc',
-    limit_price: number, // optional,
-    stop_price: number, // optional,
-    client_order_id: string, // optional,
-    extended_hours: boolean, // optional,
-    order_class: string, // optional,
-    take_profit: object, // optional,
-    stop_loss: object, // optional,
-    trail_price: string, // optional,
-    trail_percent: string // optional,
+    "symbol": string, // any valid ticker symbol
+    "qty": number,
+    "side": 'buy' | 'sell',
+    "type": 'market' | 'limit' | 'stop' | 'stop_limit' | 'trailing_stop',
+    "time_in_force": 'day' | 'gtc' | 'opg' | 'ioc',
+    "limit_price": number, // optional,
+    "stop_price": number, // optional,
+    "client_order_id": string, // optional,
+    "extended_hours": boolean, // optional,
+    "order_class": string, // optional,
+    "take_profit": object, // optional,
+    "stop_loss": object, // optional,
+    "trail_price": string, // optional,
+    "trail_percent": string // optional,
 }</span>
     ) => Promise&lt;Order&gt;</pre>
 </div>
 <div class="form-row alpaca-help" style="display:none;" data-topic="getOrders">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
-    status: 'open' | 'closed' | 'all',
-    after: Date,
-    until: Date,
-    limit: number,
-    direction: 'asc' | 'desc'
+    "status": 'open' | 'closed' | 'all',
+    "after": Date,
+    "until": Date,
+    "limit": number,
+    "direction": 'asc' | 'desc'
 }</span>
     ) => Promise&lt;Order[]&gt;</pre>
 </div>
@@ -294,8 +314,8 @@ msg.payload = {
 <div class="form-row alpaca-help" style="display:none;" data-topic="getAssets">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <span>
 {
-    status: 'active' | 'inactive',
-    asset_class: string
+    "status": 'active' | 'inactive',
+    "asset_class": string
 }</span>
     ) => Promise&lt;Asset[]&gt;</pre>
 </div>
@@ -308,8 +328,8 @@ msg.payload = {
 <div class="form-row alpaca-help" style="display:none;" data-topic="getCalendar">
 <pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
 {
-    start: Date,
-    end: Date
+    "start": Date,
+    "end": Date
 }</span>
     ) => Promise&lt;Calendar[]&gt;</pre>
 </div>

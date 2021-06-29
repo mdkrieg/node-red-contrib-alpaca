@@ -92,11 +92,24 @@ module.exports = function(RED) {
                 msg.payload = err.error.message;    //supply error string (PAYLOAD)
             	msg.error = err.error;              //supply error object
             	node.send(msg); };                  //send message
+            var handleGetBars = function(resp) {
+                for (var symbol in resp){
+                    for (var bar of resp[symbol]){
+                        let d = new Date(bar.startEpochTime * 1000);
+                        console.log(bar.startEpochTime);
+                        if(config.barISOString) bar.startISOString = d.toISOString();
+                        if(config.barDateString) bar.startDateString = d.toDateString();
+                        if(config.barTimeString) bar.startTimeString = d.toTimeString();
+                        if(config.barLocaleString) bar.startLocaleString = d.toLocaleString();
+                    }
+                }
+                success(resp);
+            };
             var topic = validTopic(msg.topic,config.topic,validFunctions);
             if(!topic){
                 error({"error":{"message":"Error - Invalid Function","topic":topic}});
             }else if(topic == "getBars"){
-                alpaca_conn[topic](msg.payload.timeframe || "day", msg.payload.symbol).then(success).catch(error);
+                alpaca_conn[topic](msg.payload.timeframe || "day", msg.payload.symbol, msg.payload.parameters).then(handleGetBars).catch(error);
             // BEGIN WATCHLIST CHECKS --- TODO: separate watchlist stuff into separate node
             }else if([  "addWatchlist",
                         "addToWatchlist",

@@ -111,6 +111,13 @@ By default the listener nodes connect to the symbol and subscription defined in 
 ```
 
 # Release Notes
+
+### 2.1.3
+* Updated example JSON inputs to use quotes around the "parameter": instances so that it will copy and paste better.
+
+### 2.1.1 - ..2
+* Replaced GetBarsV2 with GetBars as V2 wasn't working
+
 ### 2.1.0
 * Moving config node to separate npm package to avoid clashes with sibling project: "alpaca-simple" nodes
 
