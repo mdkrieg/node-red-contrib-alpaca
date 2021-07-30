@@ -7,11 +7,17 @@
 * NPM: https://www.npmjs.com/package/node-red-contrib-alpaca
 * NodeRed Project: https://flows.nodered.org/node/node-red-contrib-alpaca
 
-### Roadmap / TODO
-- [ ] Fix or rollback GetBarsV2
-- [ ] Provide more examples (anyone want to contribute?)
-- [ ] Allow websocket listeners to subscribe to more than one ticker per node
+# ATTENTION
+#### If you migrated from v2.0.x or v2.1.x to v2.2.x
+I've decided to re-integrate everything into one package again, v2.0 and v2.1 were both structured with two complementary packages one mandatory "auth-config" and one optional "simple" set of nodes. If you were using the node-red-contrib-alpaca-simple package then those nodes will give a "Type already registered" error - however it won't let you remove them through the palette manager, same with the alpaca-config node.
 
+If you are getting these errors run from your .node-red directory:
+```
+npm remove node-red-contrib-alpaca-auth
+npm remove node-red-contrib-alpaca-simple
+```
+
+If you have any problems, raise an issue on GitHub.
 
 # Alpaca Trading with Node-RED
 This project wraps the official Node.js library for Alpaca into useful nodes for Node-RED.
@@ -110,7 +116,17 @@ By default the listener nodes connect to the symbol and subscription defined in 
 }
 ```
 
+# Roadmap / TODO
+- [ ] Fix or rollback GetBarsV2
+- [ ] Provide more examples (anyone want to contribute?)
+- [ ] Allow websocket listeners to subscribe to more than one ticker per node
+
+
 # Release Notes
+
+### 2.2.0
+* *Rolling everything back into one package*
+* ----In v2.0.0 I split things up into separate packages to avoid clutter, this was a mistake! It required me to put the auth config into yet a separate package and this wasn't loading properly if you install through the palette manager so I'm scrapping that and merging everything together. I'll put a note at the top of this readme about migration, but ugh, what a headache this has been. Not worth it! I found a way to hide the simple nodes so I'll implement that option later but for now, everything is better off as one package.
 
 ### 2.1.3
 * Updated example JSON inputs to use quotes around the "parameter": instances so that it will copy and paste better.
@@ -181,22 +197,3 @@ By default the listener nodes connect to the symbol and subscription defined in 
 * Two examples
     * limit-spread
     * basics
-
-
-# Installation
-
-Project can be installed by searching "alpaca" in the Manage Palette section of your Node-RED session. **There are no dependencies that NPM won't take care of automatically.**
-
-Or to install using npm from your Node-RED home directory (~/.node-red)
-
-```
-npm install --save node-red-contrib-alpaca
-```
-
-**To define your API keys as environment variables:**
-   * APCA_API_KEY_ID=[your API key]
-   * APCA_API_SECRET_KEY=[your secret key]
-
-# Dependencies
-Requires Alpaca's Official NodeJS SDK, https://github.com/alpacahq/alpaca-trade-api-js
-Also see official Alpaca API documentation, https://alpaca.markets/docs/api-documentation/

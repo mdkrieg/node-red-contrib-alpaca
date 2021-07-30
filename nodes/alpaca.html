@@ -1,0 +1,659 @@
+<script type="text/javascript">
+    /* global RED */
+    RED.nodes.registerType('Alpaca', {
+        category: 'alpaca',
+        color: '#EEEEEE',
+        defaults: {
+            name: { value: "" },
+            topic: { value: "msgTopic" },
+            auth: { value: "", type: "alpaca-config" },
+            barISOString: { value: false },
+            barDateString: { value: false },
+            barTimeString: { value: false },
+            barLocaleString: { value: false }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "alpaca.svg",
+        label: function() {
+            if(this.topic=="msgTopic"){
+                return this.name || "Alpaca";
+            }else{
+                return this.name || this.topic;
+            }
+        }
+    });
+
+    RED.nodes.registerType('alpaca-websocket',{
+        category: 'config',
+        defaults: {
+            name: {value:"My V2 WebSocket",required:true},
+            wsauth: {type:"alpaca-config",required:true},
+            feed: {value:"iex",required:true},
+            debug: { value: true},
+            contextname: { value: "alpaca_websocket_session"}
+        },
+        label: function(){return this.name;}
+    });
+    
+    RED.nodes.registerType('Alpaca-Websocket', {
+        category: 'alpaca',
+        color: '#EEEEEE',
+        defaults: {
+            name: { value: "" },
+            socket: { value: "", type: "alpaca-websocket" },
+            subscribeFor: { value: "trades", required: true },
+            symbol: { value: "", required: true },
+            inputs: { value: 0 },
+            enbInputConfig: { value: false},
+            onSubscribeMsg: { value: false},
+            onConnectMsg: { value: false},
+            onStatusMsg: { value: false},
+            onDisconnectMsg: { value: false}
+        },
+        inputs: 0,
+        outputs: 1,
+        icon: "alpaca.svg",
+        paletteLabel: "Websocket",
+        label: function() {
+            return this.name; // || this.topic;
+        }
+    });
+    
+
+</script>
+
+<!------------------------------------------------------------------------------------->
+<!------------------------------------------------------------------------------------->
+<!------------------------------------------------------------------------------------->
+<style type="text/css">
+    .copy-button{
+        position: relative;
+        right: 0px;
+        top: 0px;
+        float: right;
+        box-sizing: border-box;
+        background: white;
+        border: 1px solid #aa6767;
+        text-shadow: none;
+        font-size: 12px;
+        color: #666 !important;
+        padding: 6px 10px;
+        border-top-right-radius: 3px;
+        border-bottom-left-radius: 3px;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+</style>
+<script type="text/x-red" data-template-name="Alpaca">
+    <!-----------------API KEYS--------------------->
+    <div class="form-row">
+        <label for="node-input-auth"><i class="fa fa-key"></i> Auth</label>
+        <input type="text" id="node-input-auth" placeholder="API Keys">
+    </div>
+    <!-----------------NAME--------------------->
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <!-----------------FUNCTION--------------------->
+    <div class="form-row">
+        <label for="node-input-topic"><i class="fa fa-function"></i> Function</label>
+        <select id="node-input-topic" placeholder="Function">
+            <option value=	"msgTopic">	Use msg.Topic	</option>
+            <option value = "getAccount"> Get Account </option>
+            <option value = "getAccountConfigurations"> Get Account Configurations </option>
+            <option value = "updateAccountConfigurations"> Update Account Configurations </option>
+            <option value = "getAccountActivities"> Get Account Activities </option>
+            <option value = "getPortfolioHistory"> Get Portfolio History </option>
+            <option value = "getBars"> Get Bars </option>
+            <option value = "createOrder"> Create Order </option>
+            <option value = "getOrders"> Get Orders </option>
+            <option value = "getOrder"> Get Order </option>
+            <option value = "getOrderByClientOrderId"> Get Order By Client Order Id </option>
+            <option value = "replaceOrder"> Replace Order </option>
+            <option value = "cancelOrder"> Cancel Order </option>
+            <option value = "cancelAllOrders"> Cancel All Orders </option>
+            <option value = "getPosition"> Get Position </option>
+            <option value = "getPositions"> Get Positions </option>
+            <option value = "closePosition"> Close Position </option>
+            <option value = "closeAllPositions"> Close All Positions </option>
+            <option value = "lastTrade"> Last Trade </option>
+            <option value = "lastQuote"> Last Quote </option>
+            <option value = "getAssets"> Get Assets </option>
+            <option value = "getAsset"> Get Asset </option>
+            <option value = "getCalendar"> Get Calendar </option>
+            <option value = "getWatchlists"> Get Watchlists </option>
+            <option value = "getWatchlist"> Get Watchlist </option>
+            <option value = "addWatchlist"> Add Watchlist </option>
+            <option value = "addToWatchlist"> Add To Watchlist </option>
+            <option value = "updateWatchlist"> Update Watchlist </option>
+            <option value = "deleteWatchlist"> Delete Watchlist </option>
+            <option value = "deleteFromWatchlist"> Delete From Watchlist </option>
+        </select>
+        <br />
+    </div>
+
+<div class="form-row alpaca-help" style="display:none;" data-topic="msgTopic">
+<pre class="highlight language-javascript"><span class="f">msg.topic = </span><button class="copy-button" type="button">Copy</button><span>
+[
+    "getAccount",
+    "getAccountConfigurations",
+    "updateAccountConfigurations",
+    "getAccountActivities",
+    "getPortfolioHistory",
+    "getBars",
+    "createOrder",
+    "getOrders",
+    "getOrder",
+    "getOrderByClientOrderId",
+    "replaceOrder",
+    "cancelOrder",
+    "cancelAllOrders",
+    "getPosition",
+    "getPositions",
+    "closePosition",
+    "closeAllPositions",
+    "lastTrade",
+    "lastQuote",
+    "getAssets",
+    "getAsset",
+    "getCalendar",
+    "getWatchlists",
+    "getWatchlist",
+    "addWatchlist",
+    "addToWatchlist",
+    "updateWatchlist",
+    "deleteWatchlist",
+    "deleteFromWatchlist"
+]</span></pre>
+</div>
+    <div class="form-row alpaca-help" style="display:none;" data-topic="getAccount">
+<pre class="highlight language-javascript"><span class="f">{{topic}} </span>()
+    => Promise&lt;Account&gt;;
+<small>     ...this function takes no arguments</small></pre>
+</div>
+    <div class="form-row alpaca-help" style="display:none;" data-topic="getAccountConfigurations">
+<pre class="highlight language-javascript"><span class="f">{{topic}} </span>()
+    => Promise&lt;AccountConfiguration&gt;;
+<small>     ...this function takes no arguments</small></pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="updateAccountConfigurations">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    "dtbp_check":"entry",
+    "no_shorting":false,
+    "pdt_check":"entry",
+    "suspend_trade":false,
+    "trade_confirm_email":"none"
+}</span>
+    ) => Promise&lt;AccountConfiguration&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getAccountActivities">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    "activityTypes": string | string[], // Any valid activity type
+    "until": Date,
+    "after": Date,
+    "direction": string,
+    "date": Date,
+    "pageSize": number,
+    "pageToken": string
+}</span>
+    ) => Promise&lt;AccountActivity[]&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display":none;" data-topic="getPortfolioHistory">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    "date_start": Date,
+    "date_end": Date,
+    "period": '1M' | '3M' | '6M' | '1A' | 'all' | 'intraday',
+    "timeframe": '1Min' | '5Min' | '15Min' | '1H' | '1D',
+    "extended_hours": Boolean
+}</span>
+    ) => Promise&lt;PortfolioHistory&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getBars">
+    <div class="form-row checkbox-row">
+        <label for="node-input-barISOString"><i class="fa fa-clock"></i> Include ISOString timestamp</label>
+        <input type="checkbox" id="node-input-barISOString">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-barDateString"><i class="fa fa-clock"></i> Include DateString timestamp</label>
+        <input type="checkbox" id="node-input-barDateString">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-barTimeString"><i class="fa fa-clock"></i> Include TimeString timestamp</label>
+        <input type="checkbox" id="node-input-barTimeString">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-barLocaleString"><i class="fa fa-clock"></i> Include LocaleString timestamp</label>
+        <input type="checkbox" id="node-input-barLocaleString">
+    </div>
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (<button class="copy-button" type="button">Copy</button><span>
+msg.payload = {
+    "symbol": "AAPL", // can be multiple comma separated values
+    "timeframe": "minute" | "1Min" | "5Min" | "15Min" | "day" | "1D", //defaults to "day"
+    "parameters": {
+        "limit": number, // between 1 and 1000. Default is 100 if unspecified or 0.
+        "start": date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ after
+        "end": date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ until
+        "after": date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ start
+        "until": date isoformat string yyyy-mm-ddThh:MM:ss-04:00, //incompatible w/ until
+    }
+}</span>
+    ) => Promise&lt;BarsObject&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="createOrder">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    "symbol": string, // any valid ticker symbol
+    "qty": number,
+    "side": 'buy' | 'sell',
+    "type": 'market' | 'limit' | 'stop' | 'stop_limit' | 'trailing_stop',
+    "time_in_force": 'day' | 'gtc' | 'opg' | 'ioc',
+    "limit_price": number, // optional,
+    "stop_price": number, // optional,
+    "client_order_id": string, // optional,
+    "extended_hours": boolean, // optional,
+    "order_class": string, // optional,
+    "take_profit": object, // optional,
+    "stop_loss": object, // optional,
+    "trail_price": string, // optional,
+    "trail_percent": string // optional,
+}</span>
+    ) => Promise&lt;Order&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getOrders">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    "status": 'open' | 'closed' | 'all',
+    "after": Date,
+    "until": Date,
+    "limit": number,
+    "direction": 'asc' | 'desc'
+}</span>
+    ) => Promise&lt;Order[]&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getOrder">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = uuid)
+    => Promise&lt;Order&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getOrderByClientOrderId">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = string)
+    => Promise&lt;Order&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="replaceOrder">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = uuid)
+    => Promise&lt;Order&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="cancelOrder">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = uuid)
+    => Promise</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="cancelAllOrders">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
+    => Promise</pre>
+<small>     this function takes no arguments</small>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getPosition">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
+    => Promise&lt;Position&gt;</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="getPositions">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
+    => Promise&lt;Position&gt;</pre>
+<small>     this function takes no arguments</small>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="closePosition">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
+    => Promise</pre>
+</div>
+<div class="form-row alpaca-help" style="display:none;" data-topic="closeAllPositions">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
+    => Promise</pre>
+<small>     this function takes no arguments</small>
+</div>
+<!--------<alpaca-help>----                     LAST TRADE: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="lastTrade">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = "SYMBOL" // simple string
+    ) => Promise&lt;LastTradeObject&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     LAST QUOTE: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="lastQuote">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = "SYMBOL" // simple string
+    ) => Promise&lt;LastQuoteObject&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     GET ASSETS: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getAssets">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <span>
+{
+    "status": 'active' | 'inactive',
+    "asset_class": string
+}</span>
+    ) => Promise&lt;Asset[]&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     GET ASSET: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getAsset">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = symbol)
+    => Promise&lt;Asset&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     GET CALENDAR: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getCalendar">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (msg.payload = <button class="copy-button" type="button">Copy</button><span>
+{
+    "start": Date,
+    "end": Date
+}</span>
+    ) => Promise&lt;Calendar[]&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     GET WATCHLISTS: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getWatchlists">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ()
+</span>
+     => Promise&lt;response&gt;</pre>
+<small>     this function takes no arguments</small>
+</div>
+<!--------<alpaca-help>----                     GET WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="getWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> (<button class="copy-button" type="button">Copy</button><span>
+    msg.payload = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"</span>
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     ADD WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="addWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload.name = "myWatchList",
+    msg.payload.tickers = ["SYMBOL1","SYMBOL2"] //OPTIONAL
+</span>
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     ADD TO WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="addToWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload.id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    msg.payload.ticker = "SYMBOL" 
+</span>
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     UPDATE WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="updateWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload.name = "myWatchList",
+    msg.payload.tickers = ["SYMBOL1", "SYMBOL2"] 
+</span>
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     DELETE WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="deleteWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+</span>
+    ) => Promise&lt;response&gt;</pre>
+</div>
+<!--------<alpaca-help>----                     DELETE FROM WATCHLIST: ---->
+<div class="form-row alpaca-help" style="display:none;" data-topic="deleteFromWatchlist">
+<pre class="highlight language-javascript"><span class="f">{{topic}}</span> ( <button class="copy-button" type="button">Copy</button><span>
+    msg.payload.name = "myWatchList",
+    msg.payload.ticker = "SYMBOL" 
+</span>
+    ) => Promise&lt;response&gt;</pre>
+</div>
+    
+    <script type="text/javascript">
+    /*global $*/
+        $(document).ready(function(){
+            $(".copy-button").on("click", function(evt) {
+                evt.preventDefault();
+                var ta = document.createElement('textarea');
+                ta.value = $(this).next()[0].innerText;
+                ta.style.position = 'absolute';
+                ta.style.left = '-3000px';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                $(this).text("Copied!");
+                var self = $(this);
+                setTimeout(function() {
+                    self.text("Copy");
+                },3000);
+            });
+            $("#dialog-form .form-row .highlight span.f").each(function(){
+                $(this).text(function(){
+                    return $(this).text().replace(
+                        "{{topic}}",
+                        $(this).parent().parent().data("topic")
+                    );
+                });
+            });
+            var showHelp = function(){
+                var newTopic = $("#node-input-topic").val();
+                $("#dialog-form .form-row.alpaca-help").each(function(){
+                    var $row = $(this);
+                    if($row.data("topic") == newTopic){
+                        $row.show();
+                    }else{
+                        $row.hide();
+                    }
+                });
+            };
+            $("#node-input-topic").on("change", showHelp);
+            $("#node-input-topic").ready(showHelp);
+        });
+    </script>
+</script>
+
+<script type="text/x-red" data-help-name="Alpaca">
+    <p>Universal node that wraps all of the </p>
+    <h3>Inputs</h3>
+    <p>See configuration panel for examples of each request </p>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+           <span class="property-type">object</span>
+       </dt>
+        <h3>Details</h3>
+        <p>Payload is the full response object from the API</p>
+        <dt>topic
+           <span class="property-type">string</span>
+       </dt>
+        <h3>Details</h3>
+        <p>Topic is the type of event being emitted from the node</p>
+</script>
+
+<!------------------------------------------------------------------------------------->
+<!--------------------------- BEGIN WEBSOCKET ----------------------------------------->
+<!------------------------------------------------------------------------------------->
+
+<style type="text/css">
+    .checkbox-row label{
+        width:250px !important;
+    }
+    .checkbox-row input{
+        width:30px !important;
+    }
+    .node-help{
+        padding: 5px 15px;
+        border: 1px dashed #BBB;
+        font-size: 0.9em;
+        margin-bottom: 15px;
+    }
+</style>
+
+<script type="text/x-red" data-template-name="Alpaca-Websocket">
+    <div class="form-row">
+        <label for="node-input-socket"><i class="fa fa-cloud-download"></i> WebSocket</label>
+        <input type="text" id="node-input-socket">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-id-card"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-subscribeFor" style="width:150px;"><i class="fa fa-rss"></i> Subscribe For:</label>
+        <select id="node-input-subscribeFor">
+            <option value=	"quotes">	Quotes </option>
+            <option value = "trades" selected> Trades </option>
+            <option value = "bars"> Bars </option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-symbol"><i class="fa fa-ticket"></i> Symbol</label>
+        <input type="text" id="node-input-symbol">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-enbInputConfig"><i class="fa fa-cogs"></i> Programmatic Config</label>
+        <input type="checkbox" id="node-input-enbInputConfig"><br>
+        <p class="node-help" style="display:none;">
+            <code>msg.payload</code> replaces Symbol<br>
+            <code>msg.topic</code> replaces Subscription ("trades", "quotes", "bars")
+        </p>
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-onSubscribeMsg"><i class="fa fa-bug"></i> Send Msg onSubscribe</label>
+        <input type="checkbox" id="node-input-onSubscribeMsg">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-onConnectMsg"><i class="fa fa-bug"></i> Send Msg onConnect</label>
+        <input type="checkbox" id="node-input-onConnectMsg">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-onStatusMsg"><i class="fa fa-bug"></i> Send Msg onStatusChange</label>
+        <input type="checkbox" id="node-input-onStatusMsg">
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-onDisconnectMsg"><i class="fa fa-bug"></i> Send Msg onDisconnect</label>
+        <input type="checkbox" id="node-input-onDisconnectMsg">
+    </div>
+    <input id="node-input-inputs" type="hidden" value="0">
+    <script type="text/javascript">
+    /*global $*/
+        function showSocketHelp(speed, $this = $("#node-input-enbInputConfig")){
+            var checked = $this.is(":checked");
+            var $helper = $this.parents(".form-row").find(".node-help");
+            if (checked){
+                $helper.show(speed);
+            }else{
+                $helper.hide(speed);
+            }
+        }
+        $(document).ready(function(){
+            $("#node-input-enbInputConfig").on("change",function(){
+                var $this = $(this);
+                var checked = $this.is(":checked");
+                var inputs = checked ? 1:0;
+                showSocketHelp(300, $this);
+                $this.parents("#dialog-form")
+                    .find("#node-input-inputs")
+                    .val(inputs);
+                console.log("inputs changed to " + inputs);
+            });
+            showSocketHelp(0);
+        });
+    </script>
+</script>
+
+<script type="text/x-red" data-help-name="Alpaca-Websocket">
+    <p>Node for connecting to the Alpaca Data V2 Websocket Client.</p>
+    <h3>Config</h3>
+    <dl class="message-properties">
+        <dt>WebSocket
+           <span class="property-type">node</span>
+        </dt>
+        <p>Connection channel that multiplexes to the user nodes.</p>
+        <dt>Name
+           <span class="property-type">string</span>
+        </dt>
+        <p>Arbitrary name to display in the editor.</p>
+        <dt>Subscribe For
+           <span class="property-type">selection</span>
+        </dt>
+        <p>Type of data to listen for (Trades, Quotes, Bars).</p>
+        <dt>Symbol
+           <span class="property-type">string</span>
+        </dt>
+        <p>Stock symbol to listen for.</p>
+        <dt>Programmatic Config
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Enables an input connection to be able to dynamically
+        change the subscription of the node.</p>
+        <dt>Send Msg onSubscribe
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Sends a message when the subscription changes
+        (on both subscribe and unsubscribe).</p>
+        <dt>Send Msg onConnect
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Sends a message when the socket connects.</p>
+        <dt>Send Msg onStatusChange
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Sends a message when the socket status changes.</p>
+        <dt>Send Msg onDisconnect
+           <span class="property-type">boolean</span>
+        </dt>
+        <p>Sends a message when the socket disconnects.</p>
+    </dl-->
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+           <span class="property-type">object</span>
+       </dt>
+        <p>Payload is the response object from the API, see the 
+        <a href="https://github.com/mdkrieg/node-red-contrib-alpaca#alpaca-websocket">README on GitHub</a></p>
+        <dt>topic
+           <span class="property-type">string</span>
+       </dt>
+       <p>Topic represents the triggered function, possibilities are:
+       <ul>
+        <li>onStockTrade</li>
+        <li>onStockQuote</li>
+        <li>onStockBar</li>
+        <li>onConnect</li>
+        <li>onDisconnect</li>
+        <li>onStateChange</li>
+        <li>subscribeForTrades</li>
+        <li>subscribeForQuotes</li>
+        <li>subscribeForBars</li>
+        <li>unsubscribeFromTrades</li>
+        <li>unsubscribeFromQuotes</li>
+        <li>unsubscribeFromBars</li>
+       </ul>
+       </p>
+       
+    </dl-->
+        <h3>References</h3>
+        <p><a href="https://github.com/mdkrieg/node-red-contrib-alpaca#alpaca-websocket">README on GitHub</a></p>
+        <p><a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/alpaca-data-api-v2/">Alpaca Documentation</a></p>
+        <p><a href="https://github.com/alpacahq/alpaca-trade-api-js/blob/master/examples/websocket_example_datav2.js">SDK Example from GitHub</a></p>
+</script>
+
+<script type="text/x-red" data-template-name="alpaca-websocket"> <!--NOTE: This is the connector module, not the user node-->
+    <div class="form-row">
+        <label for="node-config-input-wsauth"><i class="fa fa-key"></i> Alpaca Config</label>
+        <input type="text" id="node-config-input-wsauth">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-bookmark"></i> WebSocket Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-feed"><i class="fa fa-cloud-download"></i> Feed</label>
+        <input type="text" id="node-config-input-feed">
+        <br><small> Free accounts must use <code>iex</code>.
+        <br> Unlimited accounts can use <code>cta</code>, <code>utp</code>, <code>sip</code>.
+        <br> (The <a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/alpaca-data-api-v2/#subscription-plans"><u>docs</u></a>
+        aren't very clear here with unlimited feed options, msg me on GitHub if the above is incorrect)</small>
+    </div>
+    <div class="form-row checkbox-row">
+        <label for="node-input-debug"><i class="fa fa-bug"></i> Copy Websocket to Global Context</label>
+        <input type="checkbox" id="node-input-debug">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-contextname"><i class="fa fa-cogs"></i> Context Variable</label>
+        <input type="text" id="node-config-input-contextname">
+    </div>
+</script>

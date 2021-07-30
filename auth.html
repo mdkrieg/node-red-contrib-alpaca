@@ -1,0 +1,39 @@
+<script type="text/javascript">/* global RED */
+    //too savage: RED.nodes.removeNodeSet("node-red-contrib-alpaca-auth/alpaca-auth")
+    //if(!RED.nodes.registry.getModule("node-red-contrib-alpaca-auth")){
+        RED.nodes.registerType('alpaca-config',{
+            category: 'config',
+            defaults: {
+                name: {value:"My Alpaca Config",required:true},
+                keyid: {value:"",required:false},
+                secretkey: {value:"",required:false},
+                paper: {value:"true", required:true}
+            },
+            label: function(){return this.name;}
+        });
+    //}
+</script>
+
+<script type="text/x-red" data-template-name="alpaca-config">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="icon-bookmark"></i> Config Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-keyid"><i class="fa fa-key"></i> Key</label>
+        <input type="text" id="node-config-input-keyid">
+        <br><!--small> Use environment variables <code>APCA_API_KEY_ID</code> for live trading or <code>APCA_API_KEY_ID_PAPER</code> for paper trading</small-->
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-secretkey"><i class="fa fa-key"></i> Secret Key</label>
+        <input type="text" id="node-config-input-secretkey">
+        <br><!--small> Use environment variables <code>APCA_API_SECRET_KEY</code> for live trading or <code>APCA_API_SECRET_KEY_PAPER</code> for paper trading</small-->
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-paper"><i class="fa fa-exclamation-triangle"></i> Paper/Live Account</label>
+        <select id="node-config-input-paper" placeholder="Paper">            
+            <option value="true">Paper</option>
+            <option value="false">Live</option>
+        </select>
+    </div>
+</script>
