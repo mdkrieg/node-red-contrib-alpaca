@@ -124,6 +124,12 @@ By default the listener nodes connect to the symbol and subscription defined in 
 
 # Release Notes
 
+### 2.2.2
+* forcing @alpacahq/alpaca-trade-api dependency to v2.3.0 as latest causes "not a function" error (lastQuote, probably others)
+
+### 2.2.1
+* fixing icon path
+
 ### 2.2.0
 * *Rolling everything back into one package*
 * ----In v2.0.0 I split things up into separate packages to avoid clutter, this was a mistake! It required me to put the auth config into yet a separate package and this wasn't loading properly if you install through the palette manager so I'm scrapping that and merging everything together. I'll put a note at the top of this readme about migration, but ugh, what a headache this has been. Not worth it! I found a way to hide the simple nodes so I'll implement that option later but for now, everything is better off as one package.
